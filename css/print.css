@@ -1,0 +1,154 @@
+/* SPDX-License-Identifier: PolyForm-Shield-1.0.0 */
+
+:root {
+  --doc-ink:    #121A24;
+  --doc-muted:  #5A6675;
+  --doc-line:   #D8DEE7;
+  --doc-accent: #C2410C;
+  --doc-paper:  #FFFFFF;
+  --doc-bg:     #EEF1F5;
+
+  --fs-micro: 10.5px;
+  --fs-tag:   12px;
+  --fs-small: 13px;
+  --fs-ui:    14px;
+  --fs-body:  16px;
+  --fs-lead:  17px;
+  --fs-h2:    20px;
+  --fs-title: 28px;
+
+  --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', 'Consolas', monospace;
+}
+
+* { box-sizing: border-box; }
+
+body.doc {
+  margin: 0; padding: 24px 16px 60px;
+  background: var(--doc-bg); color: var(--doc-ink);
+  font: var(--fs-ui)/1.6 var(--font);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+
+.mono { font-family: var(--mono); }
+.num  { text-align: right; }
+
+.doc-actions {
+  max-width: 760px; margin: 0 auto 16px;
+  display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+}
+.doc-back { color: var(--doc-accent); font-weight: 600; text-decoration: none; }
+.doc-back:hover { text-decoration: underline; }
+.doc-hint { color: var(--doc-muted); font-size: var(--fs-small); }
+
+.doc-banner {
+  max-width: 760px; margin: 0 auto 12px; padding: 10px 14px;
+  background: #FFF7ED; border: 1px solid #FDBA74; border-radius: 8px;
+  color: #7C2D12; font-size: var(--fs-small); font-weight: 600;
+}
+.doc-banner-void { background: #F3F4F6; border-color: var(--doc-line); color: var(--doc-muted); }
+
+.doc-page {
+  max-width: 760px; margin: 0 auto; padding: 44px 44px 36px;
+  background: var(--doc-paper); border: 1px solid var(--doc-line); border-radius: 10px;
+}
+
+.doc-head { display: flex; gap: 32px; align-items: flex-start; margin-bottom: 34px; }
+.doc-from { flex: 1; min-width: 0; }
+.doc-from h1 { margin: 0 0 6px; font-size: var(--fs-h2); font-weight: 800; letter-spacing: -.01em; }
+.doc-addr { margin: 0; color: var(--doc-muted); font-size: var(--fs-small); }
+.doc-reg  { margin-top: 6px; font-weight: 600; color: var(--doc-ink); }
+
+.doc-meta { text-align: right; flex: 0 0 auto; }
+.doc-kind {
+  margin: 0; font-size: var(--fs-micro); font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--doc-muted);
+}
+.doc-num { margin: 2px 0 10px; font-size: var(--fs-lead); font-weight: 600; }
+
+.doc-dates { display: grid; grid-template-columns: auto auto; gap: 2px 12px; margin: 0; font-size: var(--fs-small); }
+.doc-dates dt { color: var(--doc-muted); text-align: right; }
+.doc-dates dd { margin: 0; text-align: right; }
+
+.doc-to { margin-bottom: 26px; }
+.doc-label {
+  margin: 0 0 4px; font-size: var(--fs-micro); font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--doc-muted);
+}
+.doc-name { margin: 0; font-size: var(--fs-lead); font-weight: 700; }
+
+.doc-lines { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+.doc-lines th {
+  text-align: left; padding: 0 0 8px; border-bottom: 2px solid var(--doc-ink);
+  font-size: var(--fs-micro); font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--doc-muted);
+}
+.doc-lines th.num { text-align: right; }
+.doc-lines td { padding: 11px 0; border-bottom: 1px solid var(--doc-line); vertical-align: top; }
+.doc-lines td.num { white-space: nowrap; padding-left: 16px; }
+.doc-empty { color: var(--doc-muted); font-style: italic; }
+
+.doc-exempt {
+  display: inline-block; margin-left: 8px; padding: 1px 6px;
+  background: #F3F4F6; border-radius: 4px;
+  font-size: var(--fs-micro); font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--doc-muted);
+}
+
+.doc-totals { width: 100%; max-width: 340px; margin-left: auto; border-collapse: collapse; }
+.doc-totals th {
+  text-align: left; padding: 6px 0; font-weight: 400;
+  color: var(--doc-muted); font-size: var(--fs-small);
+}
+.doc-totals td { padding: 6px 0 6px 16px; text-align: right; white-space: nowrap; }
+.doc-rate { display: block; font-size: var(--fs-micro); color: var(--doc-muted); }
+
+.doc-total th, .doc-total td {
+  border-top: 2px solid var(--doc-ink); padding-top: 10px;
+  font-size: var(--fs-lead); font-weight: 700; color: var(--doc-ink);
+}
+.doc-paid-line th, .doc-paid-line td { color: var(--doc-muted); }
+
+.doc-stamp {
+  margin: 26px 0 0; padding: 8px 0;
+  border: 3px solid var(--doc-accent); border-radius: 8px;
+  color: var(--doc-accent); text-align: center;
+  font-size: var(--fs-h2); font-weight: 800; letter-spacing: .24em;
+}
+
+.doc-foot { margin-top: 34px; padding-top: 18px; border-top: 1px solid var(--doc-line); }
+.doc-pay  { margin: 0 0 10px; font-size: var(--fs-small); }
+.doc-note { margin: 0 0 6px; color: var(--doc-muted); font-size: var(--fs-small); }
+
+@media print {
+  .doc-actions { display: none; }
+
+  body.doc { background: #fff; padding: 0; font-size: var(--fs-small); }
+  .doc-page { max-width: none; border: 0; border-radius: 0; padding: 0; }
+  .doc-banner { border-radius: 0; }
+
+  .doc-lines tr, .doc-totals tr { page-break-inside: avoid; break-inside: avoid; }
+  .doc-lines thead { display: table-header-group; }
+  .doc-foot, .doc-stamp { page-break-inside: avoid; break-inside: avoid; }
+
+  @page { margin: 16mm; }
+}
+
+.doc-pdf { font: inherit; font-weight: 600; border: 1px solid #1E40AF; background: #1E40AF; color: #fff;
+           border-radius: 8px; padding: 6px 12px; cursor: pointer; margin-left: 10px; }
+.doc-pdf:hover { background: #1a3a9c; }
+@media print { .doc-pdf { display: none; } }
+
+.doc-pay { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; max-width: 820px; margin: 0 auto 14px; padding: 12px 16px;
+           background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 10px; }
+.doc-pay-l { font-weight: 600; }
+.doc-pay-btn { display: inline-block; font-weight: 700; text-decoration: none; border: 1px solid #1E40AF; background: #1E40AF; color: #fff;
+               border-radius: 8px; padding: 8px 14px; }
+.doc-pay-btn:hover { background: #1a3a9c; }
+.doc-banner { max-width: 820px; margin: 0 auto 14px; padding: 12px 16px; border-radius: 10px; border: 1px solid; }
+.doc-banner-ok { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+.doc-banner-warn { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+@media print { .doc-pay, .doc-banner { display: none; } }
+
+.pdf-note { margin: 6px 0 0; font-size: 0.85rem; color: #8a4b00; }
+@media print { .pdf-note { display: none; } }

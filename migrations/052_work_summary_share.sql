@@ -1,0 +1,26 @@
+
+CREATE TABLE IF NOT EXISTS work_summary (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  job_id INT UNSIGNED NOT NULL,
+  client_id INT UNSIGNED NULL,
+  token_hash CHAR(64) NOT NULL DEFAULT '',
+  token_enc TEXT NULL,
+  heading VARCHAR(190) NOT NULL DEFAULT '',
+  intro TEXT NULL,
+  snapshot MEDIUMTEXT NULL,
+  include_time TINYINT(1) NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL,
+  created_by VARCHAR(190) NOT NULL DEFAULT '',
+  expires_at DATETIME NULL DEFAULT NULL,
+  opened_at DATETIME NULL DEFAULT NULL,
+  approved_at DATETIME NULL DEFAULT NULL,
+  signature MEDIUMTEXT NULL,
+  signed_name VARCHAR(120) NOT NULL DEFAULT '',
+  replied_at DATETIME NULL DEFAULT NULL,
+  feedback TEXT NULL,
+  revoked_at DATETIME NULL DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY ws_job (job_id),
+  KEY ws_client (client_id),
+  KEY ws_token (token_hash)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

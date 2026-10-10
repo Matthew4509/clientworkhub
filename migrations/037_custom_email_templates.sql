@@ -1,0 +1,4 @@
+
+ALTER TABLE email_template
+  ADD COLUMN label  VARCHAR(120) NOT NULL DEFAULT '' AFTER ekey,
+  ADD COLUMN custom TINYINT(1)   NOT NULL DEFAULT 0  AFTER locked;

@@ -1,0 +1,24 @@
+
+<IfModule mod_autoindex.c>
+    Options -Indexes
+</IfModule>
+
+<FilesMatch "^(config\.php|config\.sample\.php|MANIFEST\.txt|VERSION\.txt|.*\.md|.*\.sql|.*\.bat)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+RedirectMatch 404 (^|/)\.(?!well-known(/|$))[^/]+(/|$)
+
+RedirectMatch 404 (^|/)migrations(/|$)
+RedirectMatch 404 (^|/)lib(/|$)
+RedirectMatch 404 (^|/)tests(/|$)
+RedirectMatch 404 (^|/)tools(/|$)
+RedirectMatch 404 (^|/)storage(/|$)
+
+DirectoryIndex index.php index.html

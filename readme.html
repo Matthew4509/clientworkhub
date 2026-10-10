@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Client Work Hub</title>
+<meta name="description" content="Client Work Hub: free, self-hosted software for running client work. Clients, jobs, an encrypted password vault, your day, invoices and reports, on your own hosting.">
+<style>
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url("css/fonts/inter-var-latin.woff2") format("woff2"); }
+:root {
+  --page: #f5f5f5; --card: #ffffff; --line: #e9e9e9; --line-2: #e0e0e0; --line-3: #d0d0d0;
+  --head: #1a1a1a; --body: #4d4d4d; --subtle: #6b6b6b;
+  --brand: #256eff; --brand-hover: #1a5ce6; --brand-strong: #1a4db8; --brand-soft: #eef4ff; --brand-mid: #c4d8ff;
+  --ok: #14532d; --ok-soft: #ecfdf3; --ok-line: #bbf7d0;
+  --warn: #7c2d12; --warn-soft: #fffaeb; --warn-line: #fed7aa;
+  --r-card: 20px; --r-pill: 9999px; --r-md: 12px;
+  --shadow-card: 0 1px 2px rgba(26,26,26,.04), 0 4px 16px rgba(26,26,26,.05);
+  --shadow-button: 0 1px 0 rgba(255,255,255,.25) inset, 0 1px 2px rgba(26,26,26,.18), 0 0 0 1px rgba(26,77,184,.6);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--page); color: var(--body);
+  font: 16px/1.6 "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+h1, h2, h3 { color: var(--head); line-height: 1.25; margin: 0; }
+h1 { font-size: clamp(36px, 6vw, 60px); font-weight: 700; letter-spacing: -1px; line-height: 1.08; }
+h2 { font-size: clamp(26px, 3.4vw, 34px); font-weight: 700; letter-spacing: -.5px; }
+h3 { font-size: 18px; font-weight: 600; }
+p { margin: 0 0 12px; }
+a { color: var(--brand-strong); }
+a:focus-visible, .btn:focus-visible { outline: none; box-shadow: 0 0 0 3px #5288ff; border-radius: 6px; }
+code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; }
+code { background: #f0f0f0; padding: 1px 6px; border-radius: 6px; color: var(--head); }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+/* top bar */
+.bar { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+.bar .wrap { display: flex; align-items: center; gap: 20px; height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--head); text-decoration: none; font-size: 17px; }
+.brand svg { width: 32px; height: 32px; flex: none; }
+.bar nav { display: flex; gap: 22px; margin-left: auto; }
+.bar nav a { color: var(--body); text-decoration: none; font-size: 15px; font-weight: 500; }
+.bar nav a:hover { color: var(--head); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 22px;
+  border-radius: var(--r-pill); font-weight: 600; font-size: 15px; text-decoration: none; border: 0; }
+.btn-primary { background: var(--brand); color: #fff; box-shadow: var(--shadow-button); }
+.btn-primary:hover { background: var(--brand-hover); }
+.btn-secondary { background: var(--card); color: var(--head); border: 1px solid var(--line-3); }
+.btn-secondary:hover { border-color: #a8a8a8; }
+.bar .btn { min-height: 38px; padding: 8px 18px; font-size: 14px; }
+
+/* hero */
+.hero { padding: 72px 0 40px; text-align: center; }
+.hero p.lead { font-size: clamp(18px, 2.2vw, 21px); max-width: 720px; margin: 22px auto 30px; color: var(--body); }
+.hero .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.hero .facts { display: flex; gap: 10px 22px; justify-content: center; flex-wrap: wrap; margin: 26px 0 0; padding: 0; list-style: none; font-size: 14px; color: var(--subtle); }
+.hero .facts li::before { content: "✓"; color: #15a34a; font-weight: 700; margin-right: 6px; }
+.shot { display: block; width: 100%; height: auto; border-radius: 14px; border: 1px solid var(--line); background: #fff;
+  box-shadow: 0 2px 4px rgba(26,26,26,.04), 0 18px 48px rgba(26,26,26,.10); }
+.hero .shot { margin-top: 48px; }
+
+/* sections */
+section { padding: 64px 0; }
+section.alt { background: var(--card); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.section-head { max-width: 720px; margin: 0 0 36px; }
+.section-head p { font-size: 18px; margin-top: 12px; }
+.grid { display: grid; gap: 18px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card); padding: 24px; box-shadow: var(--shadow-card); }
+section.alt .card { background: #fafafa; box-shadow: none; }
+.card h3 { margin-bottom: 8px; }
+.card p { font-size: 15px; margin: 0; }
+.icon { width: 40px; height: 40px; border-radius: var(--r-md); background: var(--brand-soft); color: var(--brand-strong);
+  display: grid; place-items: center; margin-bottom: 14px; }
+.icon svg { width: 22px; height: 22px; }
+
+/* feature rows */
+.feature { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 44px; align-items: center; padding: 34px 0; }
+.feature + .feature { border-top: 1px solid var(--line-2); }
+.feature.flip .text { order: 2; }
+.feature .text h3 { font-size: 24px; letter-spacing: -.3px; margin-bottom: 12px; }
+.feature ul { margin: 14px 0 0; padding-left: 20px; }
+.feature li { margin: 6px 0; }
+.feature figure { margin: 0; }
+figcaption { font-size: 13px; color: var(--subtle); margin-top: 10px; text-align: center; }
+.phones { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; max-width: 520px; justify-self: center; }
+.phones .shot { border-radius: 22px; }
+
+/* lists and tables */
+.list-cards { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.req { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card); overflow: hidden; font-size: 15px; }
+.req th, .req td { text-align: left; padding: 14px 20px; border-bottom: 1px solid var(--line-2); vertical-align: top; }
+.req tr:last-child td { border-bottom: 0; }
+.req th { background: #fafafa; color: var(--head); font-weight: 600; font-size: 14px; }
+.tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: var(--r-pill); border: 1px solid; white-space: nowrap; }
+.tag-need { color: var(--brand-strong); background: var(--brand-soft); border-color: var(--brand-mid); }
+.tag-opt { color: var(--body); background: #f4f4f4; border-color: var(--line-3); }
+.steps { counter-reset: step; list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+.steps li { counter-increment: step; position: relative; padding: 20px 24px 20px 76px; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card); }
+.steps li::before { content: counter(step); position: absolute; left: 22px; top: 18px; width: 36px; height: 36px; border-radius: 50%;
+  background: var(--brand); color: #fff; font-weight: 700; display: grid; place-items: center; }
+.steps b { color: var(--head); }
+.note { border-radius: 16px; padding: 18px 22px; border: 1px solid var(--warn-line); background: var(--warn-soft); color: var(--warn); margin-top: 22px; }
+.note b { color: var(--warn); }
+.licence { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.yes h3::before { content: "✓ "; color: #15a34a; }
+.no h3::before { content: "✕ "; color: #be123c; }
+.card ul { margin: 6px 0 0; padding-left: 20px; font-size: 15px; }
+.card li { margin: 4px 0; }
+footer { padding: 40px 0 56px; font-size: 14px; color: var(--subtle); }
+footer .wrap { display: flex; gap: 12px 24px; flex-wrap: wrap; align-items: center; }
+footer .grow { flex: 1; }
+
+@media (max-width: 900px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .feature, .feature.flip { grid-template-columns: 1fr; gap: 22px; }
+  .feature.flip .text { order: 0; }
+  .bar nav { display: none; }
+  .bar .btn { margin-left: auto; }
+}
+@media (max-width: 620px) {
+  .wrap { padding: 0 16px; }
+  .grid, .list-cards, .licence { grid-template-columns: 1fr; }
+  section { padding: 48px 0; }
+  .hero { padding-top: 48px; }
+  .req th, .req td { padding: 12px 14px; }
+  .steps li { padding: 18px 18px 18px 66px; }
+  .steps li::before { left: 16px; }
+}
+
+/* the PDF: A4, no sticky bar, no page breaks through a picture */
+@page { size: A4; margin: 14mm 14mm 16mm; }
+@media print {
+  body { background: #fff; font-size: 10.5pt; line-height: 1.5; }
+  h1 { font-size: 30pt; } h2 { font-size: 19pt; } .feature .text h3 { font-size: 14pt; }
+  .hero p.lead { font-size: 12.5pt; margin: 10pt auto 12pt; }
+  .hero .facts { margin-top: 8pt; }
+  .bar, .hero .actions, .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  .wrap { max-width: none; padding: 0; }
+  section, section.alt { padding: 18pt 0; background: #fff; border: 0; }
+  .hero { padding: 0 0 6pt; }
+  .hero .shot { margin-top: 18pt; }
+  h2 { break-after: avoid; }
+  .section-head { margin-bottom: 14pt; break-after: avoid; }
+  #requirements .wrap, #install .section-head + .steps { break-before: auto; }
+  .req { break-before: avoid; }
+  /* text beside its picture: three features to a page, not one */
+  .feature, .feature.flip { grid-template-columns: 38fr 62fr; gap: 14pt; padding: 10pt 0; break-inside: avoid; }
+  .feature.flip .text { order: 0; }
+  .feature + .feature { border-top: 1px solid var(--line-2); }
+  .feature ul { margin-top: 6pt; padding-left: 14pt; }
+  .feature li { margin: 3pt 0; }
+  figcaption { font-size: 9pt; margin-top: 4pt; }
+  .list-cards { gap: 8pt; }
+  section#licence, section#install .note { break-inside: avoid; }
+  .steps { gap: 8pt; } .steps li { padding: 10pt 14pt 10pt 52pt; } .steps li::before { left: 14pt; top: 10pt; width: 26px; height: 26px; }
+  .card, .steps li, .req, figure, .note { break-inside: avoid; box-shadow: none; }
+  .shot { box-shadow: none; }
+  .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10pt; }
+  .card { padding: 12pt; }
+  .page-break { break-before: page; }
+  a { color: var(--head); text-decoration: none; }
+  .phones { max-width: 260px; }
+}
+.print-only { display: none; }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Client Work Hub, back to the top">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#256eff"/><g fill="none" stroke="#fff" stroke-linecap="round"><rect x="14" y="16" width="36" height="32" rx="4" stroke-width="5" stroke-linejoin="round"/><path stroke-width="4" d="M21 26 H37"/><path stroke-width="4" d="M21 34 H31"/><path stroke-width="5" stroke-linejoin="round" d="M36 40 L41 45 L50 34"/></g></svg>
+      Client Work Hub
+    </a>
+    <nav aria-label="Sections">
+      <a href="#why">Why</a>
+      <a href="#features">Features</a>
+      <a href="#requirements">Requirements</a>
+      <a href="#install">Install</a>
+      <a href="#licence">Licence</a>
+    </nav>
+    <a class="btn btn-primary" href="https://github.com/Matthew4509/clientworkhub/releases">Download</a>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero">
+  <div class="wrap">
+    <h1>Run your client work<br>from one place.</h1>
+    <p class="lead">Client Work Hub keeps your clients, their jobs, the passwords to their accounts, your working day and your invoices together, on hosting you own. It is free, and it is built for a business of one that wants room to grow.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="https://github.com/Matthew4509/clientworkhub/releases">Download version 0.3.19</a>
+      <a class="btn btn-secondary" href="Client-Work-Hub.pdf">Read this as a PDF</a>
+    </div>
+    <p class="print-only">Version 0.3.19 · https://github.com/Matthew4509/clientworkhub</p>
+    <ul class="facts">
+      <li>Free to use</li>
+      <li>Runs on ordinary cPanel hosting</li>
+      <li>No tracking, no account with anyone</li>
+      <li>Passwords encrypted at rest</li>
+    </ul>
+    <img class="shot" src="docs/images/dashboard.jpg" width="1600" height="1000" alt="The dashboard: the next tasks due, recently completed work, today's schedule with the working day and a break, messages and coming appointments.">
+  </div>
+</section>
+
+<section id="why" class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Why use Client Work Hub</h2>
+      <p>Most of running a service business is the same loop: take on a client, agree the work, do it on the right days, get paid, and keep the logins safe. This puts that loop on one screen.</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h18M12 3v18"/></svg></div>
+        <h3>Free, with nothing to renew</h3>
+        <p>No subscription, no client limit, no licence key. Download it, install it, use it for as long as you like.</p>
+      </div>
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></div>
+        <h3>Your server, your data</h3>
+        <p>It runs on your own hosting under your own domain. Nothing about your clients or your work is sent anywhere.</p>
+      </div>
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+        <h3>A vault for client logins</h3>
+        <p>Website, social and hosting sign-ins are encrypted with a key kept outside the database, and every reveal is logged.</p>
+      </div>
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <h3>Your day, planned for you</h3>
+        <p>Jobs turn into daily, weekly or monthly tasks that land on the days you work, with a timer to see where the hours went.</p>
+      </div>
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M9 12h6M9 16h6M9 8h3"/></svg></div>
+        <h3>Invoices when you want them</h3>
+        <p>Draft, issue and record payments, with your own tax and a printable copy your client can open from a link.</p>
+      </div>
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 17l6-6 4 4 6-8"/></svg></div>
+        <h3>Installs in minutes</h3>
+        <p>Plain PHP and MySQL. Upload one zip, open the installer, fill in one form. No command line, no build step.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>What it does</h2>
+      <p>Ninety per cent of using it is: add a client, add a job, do the work, know where the day went. Everything else is there when you want it and switched off until then.</p>
+    </div>
+
+    <div class="feature">
+      <div class="text">
+        <h3>Clients, with everything in one file</h3>
+        <p>The person or business you work for, and everything that goes with them.</p>
+        <ul>
+          <li>Add a client from any screen in a few short fields. Only a name is required.</li>
+          <li>Standing instructions, such as "articles of 500 words" or "never post before 9am", follow their work wherever it is done.</li>
+          <li>Contacts, properties, jobs, invoices and a history of every email and call, on tabs.</li>
+          <li>Mark a client VIP to move their work up the queue.</li>
+        </ul>
+      </div>
+      <figure><img class="shot" src="docs/images/client.jpg" width="1600" height="1000" alt="A client's page: business details, the brief, contact details, properties and jobs, and buttons to add a property, add a job or send a message." loading="lazy"><figcaption>A client's file. All names in these pictures are invented.</figcaption></figure>
+    </div>
+
+    <div class="feature flip">
+      <div class="text">
+        <h3>Jobs that plan themselves</h3>
+        <p>A job is a piece of work with a price, a start and a length. It creates the tasks that fill your days.</p>
+        <ul>
+          <li>Three steps: who it is for, what the work is, when it runs.</li>
+          <li>Leave the name or the date empty and it fills them in.</li>
+          <li>Paste the client's brief once; it shows on every task of that job.</li>
+          <li>See progress, value and status for every job in one list.</li>
+        </ul>
+      </div>
+      <figure><img class="shot" src="docs/images/jobs.jpg" width="1600" height="1000" alt="The jobs list: each job with its property, client, dates, a progress bar, value and status." loading="lazy"></figure>
+    </div>
+
+    <div class="feature">
+      <div class="text">
+        <h3>The task screen, where the work happens</h3>
+        <p>Open a task and everything you need is there: who it is for, the job description, what was done last time, and the sign-in for the website or account you are working on.</p>
+        <ul>
+          <li>Start, pause and finish a timer without leaving the page.</li>
+          <li>Copy the username and reveal the password with one deliberate click.</li>
+          <li>Write what you did in words the client can read, and keep private notes beside it.</li>
+        </ul>
+      </div>
+      <figure><img class="shot" src="docs/images/task.jpg" width="1600" height="1000" alt="A task: the job description, the property with Copy username and Copy password buttons, notes about the client, and recent work notes." loading="lazy"></figure>
+    </div>
+
+    <div class="feature flip">
+      <div class="text">
+        <h3>Your whole workload in one list</h3>
+        <p>The dashboard shows today. Workflow shows everything: every task by day, with Start, Mark as done and Edit beside each one.</p>
+        <ul>
+          <li>Set your working days, hours and breaks, and tasks land only on days you work.</li>
+          <li>Number what matters most and the queue follows your order.</li>
+          <li>Reminders that repeat and snooze, and appointments that block out time.</li>
+        </ul>
+      </div>
+      <figure><img class="shot" src="docs/images/workflow.jpg" width="1600" height="1000" alt="The workflow list: tasks by day with the client, the time allowed, and Start, Mark as done, Cancel and Edit buttons." loading="lazy"></figure>
+    </div>
+
+    <div class="feature">
+      <div class="text">
+        <h3>Invoices and payments</h3>
+        <p>Optional, and ready when you need it.</p>
+        <ul>
+          <li>Draft first, then issue: the number is given at issue, so there are no gaps.</li>
+          <li>One tax of your own naming, added on top or included in the price.</li>
+          <li>Record payments in full or in part, and refunds beside them.</li>
+          <li>A printable invoice and the client's own copy at a link, from the same layout.</li>
+        </ul>
+      </div>
+      <figure><img class="shot" src="docs/images/invoices.jpg" width="1600" height="1000" alt="The invoices screen: totals for invoiced, received and due, and a list of outstanding invoices." loading="lazy"></figure>
+    </div>
+
+    <div class="feature flip">
+      <div class="text">
+        <h3>Know where the money is</h3>
+        <p>Reports show a year of work at a glance, the value of what you run, and which clients pay best for the hours you put in. It is usually not the client you expected.</p>
+      </div>
+      <figure><img class="shot" src="docs/images/reports.jpg" width="1600" height="1000" alt="The reports screen: a year of activity as a grid of days, and totals for clients, jobs, work done and what it is worth." loading="lazy"></figure>
+    </div>
+
+    <div class="feature">
+      <div class="text">
+        <h3>Services you can sell again</h3>
+        <p>Save a piece of work you do often as a service, with its price, length and tasks. Start a job from it in two clicks, or publish it on an optional booking page.</p>
+      </div>
+      <figure><img class="shot" src="docs/images/services.jpg" width="1600" height="1000" alt="The services screen with two services, each showing price, length and time per day." loading="lazy"></figure>
+    </div>
+
+    <div class="feature flip">
+      <div class="text">
+        <h3>Works on your phone</h3>
+        <p>The screens rearrange themselves for a phone, so you can check the day or tick off a task away from your desk.</p>
+      </div>
+      <div class="phones">
+        <img class="shot" src="docs/images/phone-dashboard.jpg" width="640" height="1385" alt="The dashboard on a phone." loading="lazy">
+        <img class="shot" src="docs/images/phone-task.jpg" width="640" height="1385" alt="A task on a phone." loading="lazy">
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="text">
+        <h3>Updates you control</h3>
+        <p>The site never checks the internet on its own. When a new release comes out, download it from GitHub and upload it on the Update screen. It is checked file by file, refused unless it carries the release signature (on servers whose PHP has the sodium extension, which most do), and it will not run until you have taken a backup.</p>
+      </div>
+      <figure><img class="shot" src="docs/images/update.jpg" width="1600" height="1000" alt="The update screen: the running version, a What's new card pointing to the releases page on GitHub, and a health check." loading="lazy"></figure>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Also included</h2>
+    </div>
+    <div class="list-cards">
+      <div class="card"><h3>A link that brings clients back</h3><p>Every summary and follow-up can carry one private link per client, where they leave feedback, see their history and book again. No password, no account.</p></div>
+      <div class="card"><h3>Email that stays polite</h3><p>Four messages you can reword, merge codes, a record of everything sent, a send limit that suits shared hosting, and an unsubscribe that really stops everything.</p></div>
+      <div class="card"><h3>Onboarding forms</h3><p>Design the questions you need answered before work starts. Answers arrive on the client's file and any passwords go straight into the vault.</p></div>
+      <div class="card"><h3>An optional booking page</h3><p>Publish your services with a link for each, and take enquiries that you turn into clients and jobs yourself.</p></div>
+      <div class="card"><h3>Backups and restore</h3><p>One-click backups, plain or sealed with four words only you know, and a restore screen that reads the whole file before it changes anything.</p></div>
+      <div class="card"><h3>Two-step sign-in and an audit log</h3><p>Codes from an authenticator app with ten backup codes, rate limits on sign-in, and a log of every sensitive action that no screen can edit.</p></div>
+      <div class="card"><h3>A health check</h3><p>Answers from inside the site what a technician would check from a command line: PHP version, encryption, whether every file arrived intact, whether the database is current.</p></div>
+      <div class="card"><h3>Demo mode and help</h3><p>Fifty invented clients to look around with, removed in one click, and a Help button on every screen that explains the page you are on.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="requirements">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>System requirements</h2>
+      <p>Ordinary shared hosting is enough. The installer checks your server before it starts and writes a message you can send your host naming anything missing.</p>
+    </div>
+    <table class="req">
+      <thead><tr><th scope="col">What</th><th scope="col">Needed</th><th scope="col">What it is for</th></tr></thead>
+      <tbody>
+        <tr><td><b>PHP 8.1 or newer</b></td><td><span class="tag tag-need">Required</span></td><td>Tested up to PHP 8.5.</td></tr>
+        <tr><td><b>MySQL 5.7+ or MariaDB 10.3+</b></td><td><span class="tag tag-need">Required</span></td><td>One database and a user with all privileges on it.</td></tr>
+        <tr><td><code>pdo_mysql</code>, <code>mbstring</code>, <code>openssl</code></td><td><span class="tag tag-need">Required</span></td><td>The database connection, text handling, and encryption of stored passwords.</td></tr>
+        <tr><td><b>HTTPS</b></td><td><span class="tag tag-need">Strongly advised</span></td><td>It holds real passwords and sends sign-in links.</td></tr>
+        <tr><td><code>zip</code></td><td><span class="tag tag-opt">Optional</span></td><td>Installing updates from the Update screen.</td></tr>
+        <tr><td><code>sodium</code></td><td><span class="tag tag-opt">Optional</span></td><td>Checking the signature on an uploaded release.</td></tr>
+        <tr><td><code>curl</code></td><td><span class="tag tag-opt">Optional</span></td><td>Card and PayPal payments.</td></tr>
+        <tr><td><code>zlib</code>, <code>gd</code></td><td><span class="tag tag-opt">Optional</span></td><td>Smaller backups, and cleaning uploaded logos.</td></tr>
+      </tbody>
+    </table>
+    <p class="no-print" style="margin-top:14px;font-size:15px">The full list, with what you lose when an optional piece is missing, is in <a href="REQUIREMENTS.md">REQUIREMENTS.md</a>.</p>
+  </div>
+</section>
+
+<section id="install" class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Install in six steps</h2>
+      <p>The same on any cPanel host. <a href="INSTALL.md">INSTALL.md</a> and <a href="SETUP.md">SETUP.md</a> go into every detail.</p>
+    </div>
+    <ol class="steps">
+      <li><b>Download the release.</b> Get <code>clientworkhub-0.3.19.zip</code> from the Releases page: <a href="https://github.com/Matthew4509/clientworkhub/releases">https://github.com/Matthew4509/clientworkhub/releases</a></li>
+      <li><b>Create a database.</b> In cPanel, MySQL Databases: create a database and a user, and give the user all privileges on it.</li>
+      <li><b>Upload and extract.</b> In File Manager, upload the zip and extract it where the app should live, for example <code>public_html/hub/</code>. If the domain already has a website, use a folder or a subdomain.</li>
+      <li><b>Run the installer straight away.</b> Open <code>yoursite.com/hub/install.php</code>, enter the database details and your admin account. It creates the encryption key and deletes itself when it finishes.</li>
+      <li><b>Turn on two-step sign-in.</b> The last screen links to it. Keep the ten backup codes somewhere other than your phone.</li>
+      <li><b>Add your business name.</b> Settings, Invoicing, Your business, and the From name under Settings, Email. Then add your first client.</li>
+    </ol>
+    <div class="note"><b>Updating later:</b> download the newer zip from the Releases page and upload it on Settings, Update, exactly as it downloaded. Take the backup it asks for first.</div>
+  </div>
+</section>
+
+<section id="licence">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Licence</h2>
+      <p>Client Work Hub is free to use under the <a href="LICENSE">PolyForm Shield License 1.0.0</a>. In plain words:</p>
+    </div>
+    <div class="licence">
+      <div class="card yes">
+        <h3>You may</h3>
+        <ul>
+          <li>Install it and run your own business on it, at no cost.</li>
+          <li>Change it to suit the way you work.</li>
+          <li>Share copies, keeping the <code>LICENSE</code> file with them.</li>
+        </ul>
+      </div>
+      <div class="card no">
+        <h3>You may not</h3>
+        <ul>
+          <li>Sell it, or sell copies of it.</li>
+          <li>Repackage it as your own product.</li>
+          <li>Offer it as a paid or competing service.</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:18px;font-size:15px">It comes with no warranty of any kind. Releases up to 0.3.18 were published under the MIT licence and copies of those keep the terms they were given under. jsPDF and the Inter and IBM Plex Mono fonts inside it are other people's work under their own licences, listed in <a href="THIRD-PARTY-NOTICES.md">THIRD-PARTY-NOTICES.md</a>. The <code>LICENSE</code> file is the legal text; this page is only a summary.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="grow">Client Work Hub 0.3.19</span>
+    <a href="https://github.com/Matthew4509/clientworkhub">GitHub</a>
+    <a href="https://github.com/Matthew4509/clientworkhub/releases">Releases</a>
+    <a href="LICENSE">Licence</a>
+    <a href="SECURITY.md">Security</a>
+  </div>
+</footer>
+
+</body>
+</html>

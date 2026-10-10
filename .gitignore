@@ -1,0 +1,8 @@
+# An install made from a clone: its own settings and data stay out of git.
+/config.php
+/storage/*
+!/storage/.htaccess
+!/storage/index.html
+
+# Written by tools/export-public.py. Not part of the product.
+/.exported-release-copy
