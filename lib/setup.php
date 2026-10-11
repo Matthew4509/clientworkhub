@@ -55,7 +55,7 @@ function cm_setup_steps(): array
 
     }
 
-    return [
+    $steps = [
 
         'sender' => [
             'label' => 'Who your emails come from',
@@ -183,6 +183,11 @@ function cm_setup_steps(): array
             'done' => $tfaOn,
         ],
     ];
+
+
+
+    if (cm_home()) unset($steps['sender'], $steps['emails'], $steps['installer']);
+    return $steps;
 }
 
 

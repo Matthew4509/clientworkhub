@@ -129,7 +129,7 @@ function cm_logo_types(): array
 
 function cm_logo_dir(): string
 {
-    return CM_ROOT . '/storage/branding';
+    return CM_STORAGE . '/branding';
 }
 
 
@@ -194,6 +194,10 @@ function cm_logo_size(): ?array
 
 function cm_logo_advice(): string
 {
+    if (cm_home()) {
+        return 'About 400 × 100 pixels, and under 200 KB. A PNG with a transparent '
+             . 'background sits best on the invoice; a JPEG will show its own white corners.';
+    }
     return 'About 400 × 100 pixels, and under 200 KB. It is drawn 36 pixels '
          . 'tall, so 72 covers a retina screen — bigger than that is bytes '
          . 'your clients download and never see. A PNG with a transparent '

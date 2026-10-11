@@ -586,7 +586,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
 
 
-    if ($action === 'send_email') {
+    if ($action === 'send_email' && !cm_home()) {
         require_once CM_LIB . '/emails.php';
         require_once CM_LIB . '/unsubscribe.php';
         $to   = strtolower(trim((string) ($_POST['em_to'] ?? '')));
@@ -850,7 +850,8 @@ $st       = $statuses[(string) $client['status']] ?? $statuses['active'];
 $inactiveWarn = cm_client_inactive_warning($id, (string) $client['status']);
 
 
-$unsub    = cm_unsub_state($id);
+
+$unsub    = cm_home() ? null : cm_unsub_state($id);
 $core     = cm_core_details($id);
 $contacts = cm_client_contacts($id);
 $history  = cm_client_history($id, CM_HISTORY_FETCH);
@@ -2108,13 +2109,17 @@ cm_admin_nav('clients');
     <div class="card-head">
       <h2>Get in touch</h2>
       <span class="spacer"></span>
-      <?php if ($composeUnsub === null || !$composeUnsub['unsubscribed']): ?>
+      <?php if (!cm_home() && ($composeUnsub === null || !$composeUnsub['unsubscribed'])): ?>
         <button class="btn btn-sm" type="button" data-modal-open="dlg-compose">Send an email</button>
       <?php endif; ?>
+      <?php if (!cm_home()): ?>
       <button class="btn btn-sm btn-quiet" type="button" data-modal-open="dlg-sendmsg">Quick questions</button>
+      <?php endif; ?>
       <button class="btn btn-sm btn-quiet" type="button" data-modal-open="dlg-logcomm">Log a conversation</button>
     </div>
-    <?php if ($composeUnsub !== null && $composeUnsub['unsubscribed']): ?>
+    <?php if (cm_home()): ?>
+      <p class="muted small m-0">A phone call or a visit, put on the record &mdash; it opens in its own window.</p>
+    <?php elseif ($composeUnsub !== null && $composeUnsub['unsubscribed']): ?>
       <p class="muted small m-0">Nothing can be <b>emailed</b> to them &mdash; they have unsubscribed; the
       card below says how that is undone. A questions link is not an email &mdash; you hand it to them
       yourself &mdash; and logging a conversation is always open.</p>
@@ -2124,7 +2129,7 @@ cm_admin_nav('clients');
     <?php endif; ?>
   </div>
 
-  <?php if ($composeUnsub === null || !$composeUnsub['unsubscribed']): ?>
+  <?php if (!cm_home() && ($composeUnsub === null || !$composeUnsub['unsubscribed'])): ?>
   <dialog class="modal modal-wide" id="dlg-compose">
     <div class="modal-box">
       <div class="modal-head">
@@ -2294,7 +2299,7 @@ cm_admin_nav('clients');
 
 
  ?>
-  <?php if ($unsub === null || !$unsub['unsubscribed']): ?>
+  <?php if (!cm_home() && ($unsub === null || !$unsub['unsubscribed'])): ?>
     <div class="card">
       <div class="card-head">
         <h2>Email</h2>
@@ -2445,7 +2450,7 @@ cm_admin_nav('clients');
     <div class="card-head">
       <h2>The record — <?= count($record) ?></h2>
       <span class="spacer"></span>
-      <?php if ($sentMail): ?>
+      <?php if ($sentMail && !cm_home()): ?>
         <a class="small" href="<?= e(cm_url('admin/mail.php?q=' . rawurlencode((string) $client['email']))) ?>">all their emails</a>
       <?php endif; ?>
     </div>
@@ -2488,7 +2493,7 @@ cm_admin_nav('clients');
                     <button class="btn btn-sm btn-quiet" type="button"
                             data-modal-open="dlg-creply-<?= (int) $obr['id'] ?>">Read the answers</button>
                   <?php else: ?>
-                    <?php $tk = cm_token_clear($obr); ?>
+                    <?php $tk = cm_home() ? '' : cm_token_clear($obr); ?>
                     <?php if ($tk !== ''): ?>
                       <div class="linkcopy">
                         <input type="text" class="mono small" readonly
@@ -2605,6 +2610,7 @@ try { $smGeneral = cm_onboard_general_form_id(); } catch (Throwable $ex) {}
 
 $smBlocked = cm_onboard_links_blocked();
 ?>
+<?php if (!cm_home()): ?>
 <dialog class="modal modal-widest" id="dlg-sendmsg">
   <div class="modal-box">
     <div class="modal-head">
@@ -2720,6 +2726,7 @@ $smBlocked = cm_onboard_links_blocked();
     </form>
   </div>
 </dialog>
+<?php endif; ?>
 
 <aside class="day-rail">
 
@@ -2758,7 +2765,9 @@ $smBlocked = cm_onboard_links_blocked();
     <button class="btn btn-full mt-8" type="button" data-modal-open="dlg-job">Add job</button>
     <?php 
  ?>
+    <?php if (!cm_home()): ?>
     <button class="btn btn-quiet btn-full mt-8" type="button" data-modal-open="dlg-sendmsg">Send message</button>
+    <?php endif; ?>
   </div>
 
   <?php 

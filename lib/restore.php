@@ -103,7 +103,7 @@ require_once CM_LIB . '/migrate.php';
 
 function cm_restore_dir(): string
 {
-    return CM_ROOT . '/storage/restore';
+    return CM_STORAGE . '/restore';
 }
 
 
@@ -749,7 +749,7 @@ function cm_restore_appkey(string $source, bool $force = false): array
                         . 'unreadable. Tick the box to replace it.'];
     }
 
-    $dir = CM_ROOT . '/storage';
+    $dir = CM_STORAGE;
     if (!is_dir($dir)) @mkdir($dir, 0770, true);
     $file = $dir . '/appkey.php';
     if (@file_put_contents($file, "<?php return '" . addslashes($source) . "';\n") === false) {

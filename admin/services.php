@@ -301,6 +301,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
 
 
+
+    if (cm_home() && (in_array($action, ['save_bookings', 'add_fields'], true) || str_starts_with($action, 'finder_'))) {
+        cm_redirect('admin/services.php');
+    }
     if ($action === 'add_fields') {
         require_once CM_LIB . '/onboarding.php';
         $tid = (int) ($_POST['template_id'] ?? 0);
@@ -546,7 +550,8 @@ require_once CM_LIB . '/services.php';
 
 
 $tab = (string) ($_GET['tab'] ?? 'services');
-if (!in_array($tab, ['services', 'snippets', 'finder'], true)) $tab = 'services';
+
+if (!in_array($tab, cm_home() ? ['services', 'snippets'] : ['services', 'snippets', 'finder'], true)) $tab = 'services';
 
 $templates = [];
 try { $templates = cm_templates(); } catch (Throwable $ex) {}
@@ -577,8 +582,8 @@ cm_admin_nav('services');
 <nav class="subnav" aria-label="Sections">
   <?php 
  ?>
-  <?php foreach (['services' => 'Services', 'snippets' => 'Snippets',
-                  'finder' => 'Service finder'] as $k => $label): ?>
+  <?php foreach (array_merge(['services' => 'Services', 'snippets' => 'Snippets'],
+                  cm_home() ? [] : ['finder' => 'Service finder']) as $k => $label): ?>
     <a class="subnav-item<?= $tab === $k ? ' is-on' : '' ?>"
        href="<?= e(cm_url('admin/services.php?tab=' . $k)) ?>"
        <?= $tab === $k ? 'aria-current="page"' : '' ?>><?= e($label) ?></a>
@@ -675,6 +680,7 @@ one-time job or a service spread over several days.</p>
  ?>
             <?php 
  ?>
+            <?php if (!cm_home()): ?>
             <details class="action-more">
               <summary class="btn btn-sm btn-quiet">More</summary>
               <div class="action-more-body">
@@ -684,6 +690,7 @@ one-time job or a service spread over several days.</p>
                         data-modal-open="dlg-svco-<?= (int) $t['id'] ?>">Onboarding</button>
               </div>
             </details>
+            <?php endif; ?>
             <?php 
 
 
@@ -735,7 +742,7 @@ one-time job or a service spread over several days.</p>
       <?php if (cm_public_enabled()): ?>
         <a class="btn btn-sm btn-quiet" href="<?= e(cm_portal_url()) ?>"
            target="_blank" rel="noopener">Preview booking page &rarr;</a>
-      <?php else: ?>
+      <?php elseif (!cm_home()): ?>
         <span class="hint">Your client portal is off, so there is no booking
         page yet &mdash; <a href="<?= e(cm_url('admin/settings.php')) ?>">turn it
         on in Settings</a>.</span>
@@ -834,7 +841,7 @@ one-time job or a service spread over several days.</p>
                   <label class="lbl" for="sd<?= $tid ?>">Description <span class="muted">(optional)</span></label>
                   <textarea id="sd<?= $tid ?>" name="public_blurb" rows="3" class="f-full"
                             maxlength="500"><?= e((string) ($t['public_blurb'] ?? '')) ?></textarea>
-                  <div class="hint">Shown on the client portal, if you use it.</div>
+                  <?php if (!cm_home()): ?><div class="hint">Shown on the client portal, if you use it.</div><?php endif; ?>
                 </div>
                 <?php 
 
@@ -1058,6 +1065,7 @@ one-time job or a service spread over several days.</p>
 
     <?php  ?>
     <?php $tid = (int) $t['id']; ?>
+<?php if (!cm_home()): ?>
     <dialog class="modal modal-wider" id="dlg-svco-<?= $tid ?>"<?= (string) ($_GET['open'] ?? '') === 'svco-' . $tid ? ' data-modal-autoopen' : '' ?>>
       <div class="modal-box">
         <div class="modal-head">
@@ -1173,6 +1181,7 @@ one-time job or a service spread over several days.</p>
         </div>
       </div>
     </dialog>
+<?php endif; ?>
 
     <?php  ?>
     <dialog class="modal" id="dlg-svcm-<?= (int) $t['id'] ?>"<?= (string) ($_GET['open'] ?? '') === 'svcm-' . (int) $t['id'] ? ' data-modal-autoopen' : '' ?>>
@@ -1222,6 +1231,7 @@ one-time job or a service spread over several days.</p>
       </div>
     </dialog>
 
+<?php if (!cm_home()): ?>
     <dialog class="modal modal-wider" id="dlg-svcb-<?= (int) $t['id'] ?>">
       <div class="modal-box">
         <div class="modal-head">
@@ -1442,6 +1452,7 @@ one-time job or a service spread over several days.</p>
         </form>
       </div>
     </dialog>
+<?php endif; ?>
   <?php endforeach; ?>
 
   <?php 

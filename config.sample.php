@@ -71,6 +71,15 @@ return [
        Refuses to work anywhere but localhost even when true. */
     'dev_login' => false,
 
+    /* THE HOME EDITION — normally ABSENT, which is the web edition.
+       The Windows home installer writes 'edition' => 'home' here, and the
+       application then runs for one person on one PC: no client portal and
+       no page a client opens by link, no email, no Stripe or PayPal, no work
+       screens and no Piano property kind. Each of those answers 404 rather
+       than only leaving the menu, and the application refuses any request
+       that does not come from this PC. Do not set it on a web host. */
+    // 'edition' => 'home',
+
     /* THE RECOVERY KEY — normally ABSENT, and that is the correct state.
        If a future update ever breaks sign-in itself, add a long random line:
            'update_key' => 'at-least-32-random-characters',

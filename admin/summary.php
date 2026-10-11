@@ -212,6 +212,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     cm_require_csrf();
 
 
+    if (cm_home()) cm_redirect('admin/summary.php?id=' . $id);
+
+
 
 
 
@@ -348,7 +351,7 @@ client.</p>
 
 <p class="sub no-print">Everything you typed under <b>What was done</b>, and
 nothing else. Internal notes, credentials and rates have no path into this
-sheet. Print it (Ctrl+P) or edit and email it below.</p>
+sheet. <?= cm_home() ? 'Print it (Ctrl+P) or save it as a PDF.' : 'Print it (Ctrl+P) or edit and email it below.' ?></p>
 
 <div class="card" id="summary-sheet">
   <div class="card-head no-print">
@@ -380,7 +383,8 @@ sheet. Print it (Ctrl+P) or edit and email it below.</p>
 </div>
 
 <?php $unsub = cm_unsub_state((int) $client['id']); ?>
-<?php if ($unsub !== null && $unsub['unsubscribed']): ?>
+<?php if (cm_home()): ?>
+<?php elseif ($unsub !== null && $unsub['unsubscribed']): ?>
   <?php 
 
  ?>

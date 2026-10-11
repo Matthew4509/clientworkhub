@@ -126,6 +126,9 @@ function cm_portal_arrival(): string
 
 function cm_public_enabled(): bool
 {
+
+
+    if (cm_home()) return false;
     try { return (string) (cm_setting('public.enabled', '') ?? '') === '1'; }
     catch (Throwable $ex) { return false; }
 }

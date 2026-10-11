@@ -96,7 +96,7 @@ function cm_update_online_ready(): bool
 
 function cm_update_dir(): ?string
 {
-    $dir = CM_ROOT . '/' . CM_UPDATE_DIR;
+    $dir = (defined('CM_STORAGE') ? CM_STORAGE : CM_ROOT . '/storage') . '/update';
     if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) return null;
     return $dir;
 }
@@ -199,7 +199,7 @@ function cm_update_inspect(string $zipPath): array
 {
     $fail = static function (string $why): array {
         return ['ok' => false, 'error' => $why, 'version' => '', 'files' => [],
-                'count' => 0, 'has_migrations' => false];
+                'count' => 0, 'writes' => 0, 'has_migrations' => false];
     };
     if (!cm_update_ready()) {
         return $fail('This server does not have PHP\'s zip extension, so a release cannot be '
@@ -271,8 +271,11 @@ function cm_update_inspect(string $zipPath): array
     if ($version === '') {
         return $fail('That release does not say what version it is. Nothing was changed.');
     }
+
+
+    $writes = count(array_filter(array_keys($files), static fn($r) => !cm_update_is_protected((string) $r)));
     return ['ok' => true, 'error' => '', 'version' => $version, 'files' => $files,
-            'count' => count($files), 'has_migrations' => $hasMigrations];
+            'count' => count($files), 'writes' => $writes, 'has_migrations' => $hasMigrations];
 }
 
 
@@ -572,6 +575,8 @@ function cm_update_receive(array $file): array
 
 function cm_update_feed_url(): string
 {
+
+    if (function_exists('cm_home') && cm_home()) return '';
     if (function_exists('cm_config')) {
         $u = cm_config('update.feed', CM_UPDATE_FEED_DEFAULT);
 
@@ -873,4 +878,227 @@ function cm_update_download(array $feed): array
         return $fail('The release could not be kept on disk. Check storage/ is writable.');
     }
     return ['ok' => true, 'error' => '', 'path' => $dest];
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+const CM_GITHUB_LATEST_API = 'https://api.github.com/repos/Matthew4509/clientworkhub/releases/latest';
+
+
+const CM_GITHUB_HOSTS = ['api.github.com', 'github.com', 'objects.githubusercontent.com',
+                         'release-assets.githubusercontent.com', 'github-releases.githubusercontent.com'];
+
+
+function cm_update_github_api(): string
+{
+    $u = function_exists('cm_config') ? cm_config('update.github_api', '') : '';
+    return is_string($u) && preg_match('#^https?://[^/\s]+/#', $u) ? $u : CM_GITHUB_LATEST_API;
+}
+
+function cm_update_github_host_ok(string $url): bool
+{
+    $p = parse_url($url);
+    if (!is_array($p) || empty($p['host'])) return false;
+    $host = strtolower((string) $p['host']);
+    if (cm_update_github_api() !== CM_GITHUB_LATEST_API) {
+
+        $api = parse_url(cm_update_github_api());
+        return is_array($api) && $host === strtolower((string) ($api['host'] ?? ''));
+    }
+    return strtolower((string) ($p['scheme'] ?? '')) === 'https' && in_array($host, CM_GITHUB_HOSTS, true);
+}
+
+
+
+
+
+
+
+function cm_update_github_get(string $url, int $maxBytes, ?callable $sink = null): array
+{
+    $fail = static fn(string $why): array => ['ok' => false, 'error' => $why, 'body' => ''];
+    if (!function_exists('curl_init')) return $fail('PHP\'s curl extension is not loaded.');
+    for ($hop = 0; $hop < 6; $hop++) {
+        if (!cm_update_github_host_ok($url)) {
+            return $fail('The download was sent somewhere other than GitHub, so it was stopped.');
+        }
+        $body = '';
+        $got = 0;
+        $tooBig = false;
+        $ch = curl_init($url);
+        $opts = [
+            CURLOPT_FOLLOWLOCATION => false, CURLOPT_HEADER => false,
+            CURLOPT_CONNECTTIMEOUT => 15, CURLOPT_TIMEOUT => 300,
+            CURLOPT_SSL_VERIFYPEER => true, CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_HTTPHEADER => ['Accept: application/vnd.github+json',
+                                   'User-Agent: ClientWorkHub/' . (defined('CM_VERSION') ? CM_VERSION : '0')],
+            CURLOPT_WRITEFUNCTION => static function ($c, string $chunk) use (&$body, &$got, &$tooBig, $maxBytes, $sink): int {
+                $got += strlen($chunk);
+                if ($got > $maxBytes) { $tooBig = true; return 0; }
+                if ($sink !== null && curl_getinfo($c, CURLINFO_RESPONSE_CODE) === 200) {
+                    return $sink($chunk) ? strlen($chunk) : 0;
+                }
+                $body .= $chunk;
+                return strlen($chunk);
+            },
+        ];
+        if (defined('CURLSSLOPT_NATIVE_CA') && PHP_OS_FAMILY === 'Windows') {
+            $opts[CURLOPT_SSL_OPTIONS] = CURLSSLOPT_NATIVE_CA;
+        }
+        curl_setopt_array($ch, $opts);
+        $ok = curl_exec($ch);
+        $code = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        $next = (string) curl_getinfo($ch, CURLINFO_REDIRECT_URL);
+        $err = curl_error($ch);
+        if ($tooBig) return $fail('GitHub sent far more than any release. Stopped.');
+        if (in_array($code, [301, 302, 303, 307, 308], true) && $next !== '') { $url = $next; continue; }
+        if ($ok === false) return $fail('GitHub could not be reached: ' . ($err !== '' ? $err : 'no answer') . '.');
+        if ($code === 403 || $code === 429) {
+            return $fail('GitHub is limiting how often it can be asked. Try again in an hour.');
+        }
+        if ($code === 404) return $fail('GitHub has no published release to check against yet.');
+        if ($code !== 200) return $fail('GitHub answered ' . $code . '. Try again later.');
+        return ['ok' => true, 'error' => '', 'body' => $body];
+    }
+    return $fail('GitHub redirected too many times. Try again later.');
+}
+
+
+
+
+
+
+function cm_update_github_check(string $current): array
+{
+    $out = ['ok' => false, 'error' => '', 'version' => '', 'newer' => false, 'zip' => '',
+            'size' => 0, 'title' => '', 'notes' => '', 'page' => CM_RELEASES_URL, 'published' => ''];
+    $r = cm_update_github_get(cm_update_github_api(), 2097152);
+    if (!$r['ok']) return ['error' => $r['error']] + $out;
+    $j = json_decode($r['body'], true);
+    if (!is_array($j) || !isset($j['assets']) || !is_array($j['assets'])) {
+        return ['error' => 'GitHub\'s answer could not be read. Try again later.'] + $out;
+    }
+    $best = null;
+    foreach ($j['assets'] as $a) {
+        $name = (string) ($a['name'] ?? '');
+        if (!preg_match('/^clientworkhub-(\d+\.\d+\.\d+)\.zip$/', $name, $m)) continue;
+        if ($best === null || version_compare($m[1], $best['version'], '>')) {
+            $best = ['version' => $m[1], 'zip' => (string) ($a['browser_download_url'] ?? ''),
+                     'size' => (int) ($a['size'] ?? 0)];
+        }
+    }
+    if ($best === null || $best['zip'] === '') {
+        return ['error' => 'The latest release on GitHub has no Client Work Hub zip attached.'] + $out;
+    }
+    $page = (string) ($j['html_url'] ?? '');
+    return ['ok' => true, 'error' => '', 'version' => $best['version'],
+            'newer' => version_compare($best['version'], $current, '>'),
+            'zip' => $best['zip'], 'size' => $best['size'],
+            'title' => mb_substr(trim((string) ($j['name'] ?? '')), 0, 200),
+            'notes' => mb_substr(trim((string) ($j['body'] ?? '')), 0, 4000),
+            'page' => str_starts_with($page, 'https://github.com/') ? $page : CM_RELEASES_URL,
+            'published' => (string) ($j['published_at'] ?? '')];
+}
+
+
+
+function cm_update_github_download(array $chk, ?string $pubB64 = null): array
+{
+    $fail = static fn(string $why): array => ['ok' => false, 'error' => $why, 'path' => '', 'version' => '', 'note' => ''];
+    if (empty($chk['ok']) || (string) ($chk['zip'] ?? '') === '') return $fail('There is nothing to download.');
+    if ((int) ($chk['size'] ?? 0) > CM_UPDATE_MAX_BYTES) return $fail('That release is far larger than any release. Refused.');
+    $base = cm_update_dir();
+    if ($base === null) return $fail('The update folder could not be created.');
+    cm_update_clear();
+    $dest = $base . '/upload-github-' . date('Ymd-His') . '.zip';
+    $fh = @fopen($dest, 'wb');
+    if ($fh === false) return $fail('The release could not be saved in the update folder.');
+    $r = cm_update_github_get((string) $chk['zip'], CM_UPDATE_MAX_BYTES,
+                              static fn(string $c): bool => fwrite($fh, $c) === strlen($c));
+    fclose($fh);
+    if (!$r['ok']) { @unlink($dest); return $fail($r['error']); }
+    $ins = cm_update_inspect($dest);
+    if (!$ins['ok']) { cm_update_clear(); return $fail($ins['error']); }
+    $sig = cm_update_upload_signature($dest, $pubB64);
+    if (!$sig['ok']) { cm_update_clear(); return $fail($sig['error']); }
+    if ($ins['version'] !== (string) $chk['version']) {
+        cm_update_clear();
+        return $fail('GitHub named the release ' . $chk['version'] . ' but the signed zip is '
+                   . $ins['version'] . ', so it was refused and nothing was changed.');
+    }
+    return ['ok' => true, 'error' => '', 'path' => $dest, 'version' => $ins['version'],
+            'note' => (string) ($sig['note'] ?? '')];
+}
+
+
+function cm_update_rollback_dir(): string
+{
+    return (defined('CM_STORAGE') ? CM_STORAGE : CM_ROOT . '/storage') . '/rollback';
+}
+
+
+function cm_update_rollback_version(): string
+{
+    $f = cm_update_rollback_dir() . '/VERSION.txt';
+    return is_file($f) ? trim((string) @file_get_contents($f)) : '';
+}
+
+
+
+
+
+
+function cm_update_rollback_keep(string $version): array
+{
+    $files = cm_update_current_manifest();
+    if (!$files) return ['ok' => false, 'error' => 'This copy has no MANIFEST.txt, so no copy to go back to could be kept.'];
+    $dir = cm_update_rollback_dir();
+    cm_update_rmtree($dir);
+    $lines = [];
+    foreach (array_keys($files) as $rel) {
+        if (cm_update_is_protected($rel) || !cm_update_safe_rel($rel)) continue;
+        $src = CM_ROOT . '/' . $rel;
+        if (!is_file($src)) continue;
+        $dest = $dir . '/files/' . $rel;
+        if ((!is_dir(dirname($dest)) && !@mkdir(dirname($dest), 0755, true) && !is_dir(dirname($dest)))
+            || !@copy($src, $dest)) {
+            return ['ok' => false, 'error' => 'The copy to go back to could not be written (' . $rel . ').'];
+        }
+        $lines[] = hash_file('sha256', $dest) . '  ' . $rel;
+    }
+    sort($lines);
+    @file_put_contents($dir . '/MANIFEST.txt', implode("\n", $lines) . "\n");
+    @file_put_contents($dir . '/VERSION.txt', $version . "\n");
+    return ['ok' => true, 'error' => '', 'count' => count($lines)];
+}
+
+
+
+function cm_update_rollback_apply(string $actor): array
+{
+    $dir = cm_update_rollback_dir();
+    $version = cm_update_rollback_version();
+    $files = cm_update_parse_manifest((string) @file_get_contents($dir . '/MANIFEST.txt'));
+    if ($version === '' || !$files) return ['ok' => false, 'error' => 'There is no earlier copy to go back to.'];
+    foreach ($files as $rel => $want) {
+        $f = $dir . '/files/' . $rel;
+        if (!is_file($f) || !hash_equals($want, hash_file('sha256', $f))) {
+            return ['ok' => false, 'error' => 'The kept copy is damaged (' . $rel . '), so nothing was changed.'];
+        }
+    }
+    $res = cm_update_apply($dir . '/files', $files, $actor);
+    if (!$res['ok']) return ['ok' => false, 'error' => $res['error']];
+    cm_update_rmtree($dir);
+    return ['ok' => true, 'error' => '', 'version' => $version, 'written' => $res['written'],
+            'removed' => $res['removed']];
 }

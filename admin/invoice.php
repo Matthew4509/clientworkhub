@@ -124,7 +124,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
 
 
-    if ($action === 'email') {
+    if ($action === 'email' && !cm_home()) {
         $to   = strtolower(trim((string) ($_POST['to'] ?? '')));
         $subj = trim((string) ($_POST['subject'] ?? ''));
         $body = (string) ($_POST['body'] ?? '');
@@ -233,7 +233,7 @@ echo cm_crumbs_html([
   <a class="btn btn-quiet" href="<?= e(cm_url('admin/invoice-print.php?id=' . $id)) ?>">
     <?= $isPaid ? 'View / print the receipt' : 'View / print' ?></a>
   <button class="btn btn-quiet" type="button" data-invoice-pdf>Download PDF</button>
-  <?php if (!$isDraft && !$isVoid): ?>
+  <?php if (!$isDraft && !$isVoid && !cm_home()): ?>
     <button class="btn" type="button" data-modal-open="dlg-invoice-email"><?= $isPaid ? 'Email the receipt' : 'Email the invoice' ?></button>
   <?php endif; ?>
   <?php if ($isDraft): ?>
@@ -288,6 +288,7 @@ echo cm_crumbs_html([
       <?php 
  ?>
       <?php $rails = cm_pay_providers(); ?>
+      <?php if (!cm_home()): ?>
       <p class="small <?= $rails ? '' : 'muted' ?> mb-8">
         <?php if ($rails): ?>
           <b>Online:</b> <?= e(implode(' and ', array_map(static fn(array $r): string => $r['via'], $rails))) ?>
@@ -296,6 +297,7 @@ echo cm_crumbs_html([
           No online payment set up &mdash; <a href="<?= e(cm_url('admin/billing-settings.php')) ?>">Settings → Invoicing → Online payment</a>.
         <?php endif; ?>
       </p>
+      <?php endif; ?>
 
       <dl class="inv-dl">
         <dt>Invoice date</dt>
@@ -612,7 +614,7 @@ echo cm_crumbs_html([
 <script defer src="<?= e(cm_url('js/jspdf.umd.min.js')) ?>?v=<?= e(rawurlencode(cm_asset_stamp())) ?>"></script>
 <script defer src="<?= e(cm_url('js/invoice-pdf.js')) ?>?v=<?= e(rawurlencode(cm_asset_stamp())) ?>"></script>
 
-<?php if (!$isDraft && !$isVoid && $client): ?>
+<?php if (!$isDraft && !$isVoid && $client && !cm_home()): ?>
 <?php 
 
 

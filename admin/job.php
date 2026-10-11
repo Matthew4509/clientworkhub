@@ -540,7 +540,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $said[] = 'a reminder for you on ' . date('j M Y', strtotime($when));
         }
 
-        if (!empty($_POST['followup_email'])) {
+        if (!empty($_POST['followup_email']) && !cm_home()) {
             $to = trim((string) ($client['email'] ?? ''));
             if ($to === '') {
 
@@ -1016,7 +1016,7 @@ if ($showNext) {
         </form>
       <?php endif; ?>
 
-      <a class="btn btn-sm btn-quiet" href="<?= e(cm_url('admin/summary.php?id=' . $id)) ?>">Summary — print or email</a>
+      <a class="btn btn-sm btn-quiet" href="<?= e(cm_url('admin/summary.php?id=' . $id)) ?>">Summary — print<?= cm_home() ? '' : ' or email' ?></a>
 
       <?php if ((string) $job['status'] === 'completed'): ?>
         <form method="post" class="inline"
@@ -1056,6 +1056,7 @@ if ($showNext) {
                 <span class="small"><b>Remind me</b> to follow up with
                   <?= e(cm_client_display_name($client)) ?></span>
               </label>
+              <?php if (!cm_home()): ?>
               <label class="tick">
                 <input type="checkbox" name="followup_email" value="1"
                        <?= trim((string) ($client['email'] ?? '')) === '' ? 'disabled' : '' ?>>
@@ -1068,6 +1069,7 @@ if ($showNext) {
                   <?php endif; ?>
                 </span>
               </label>
+              <?php endif; ?>
               <div class="row mt-8">
                 <label class="lbl" for="followup_days">In how long?</label>
                 <select id="followup_days" name="followup_days" class="f-lg">

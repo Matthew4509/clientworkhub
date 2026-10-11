@@ -13,6 +13,7 @@
 
 declare(strict_types=1);
 require __DIR__ . '/../lib/bootstrap.php';
+cm_home_hide();
 require_once CM_LIB . '/view.php';
 require_once CM_LIB . '/smartreminders.php';
 require_once CM_LIB . '/settings.php';

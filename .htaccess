@@ -20,5 +20,6 @@ RedirectMatch 404 (^|/)lib(/|$)
 RedirectMatch 404 (^|/)tests(/|$)
 RedirectMatch 404 (^|/)tools(/|$)
 RedirectMatch 404 (^|/)storage(/|$)
+RedirectMatch 404 (^|/)windows(/|$)
 
 DirectoryIndex index.php index.html

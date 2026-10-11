@@ -40,7 +40,9 @@ require __DIR__ . '/../lib/bootstrap.php';
 require_once CM_LIB . '/publicview.php';
 require_once CM_LIB . '/branding.php';
 
-cm_public_require_enabled();
+
+
+if (!cm_home()) cm_public_require_enabled();
 
 $path = cm_logo_file();
 if ($path === null) {

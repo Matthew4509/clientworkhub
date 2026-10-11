@@ -20,14 +20,37 @@ install (`install.php`), one-click database updates (Admin → Settings →
 Update), streamed database backups, and a health screen that answers every
 question a person with a shell would ask.
 
-**Current version: 0.3.19.** `FEATURES.md` is what it does, `SECURITY.md` is
+**Current version: 0.3.20.** `FEATURES.md` is what it does, `SECURITY.md` is
 how it is defended and what is deliberately left open, `INSTALL.md` and
 `SETUP.md` are how to put it on a server and switch it on.
+
+## Two editions, one release
+
+- **Web edition** (`clientworkhub-x.y.z.zip`): for your own hosting, as
+  described below.
+- **Windows home edition** (`clientworkhub-home-x.y.z.zip`): runs on one
+  Windows 10 or 11 PC, for one person, with nothing to host. Unzip it and
+  double-click **Install Client Work Hub.cmd** in the folder inside it: it
+  installs for your Windows user (no administrator, unless the PC lacks
+  Microsoft's Visual C++ Runtime: setup offers to install it, and Windows asks
+  for permission), adds Client Work Hub to the Start menu, and opens it in its
+  own window. It carries its own PHP and MariaDB, answers only on
+  that PC, and keeps your data in `%APPDATA%\Client Work Hub`, which
+  uninstalling (Settings > Apps) leaves alone. Everything that reaches a
+  client or the internet is left out: no client portal or links, no email,
+  no Stripe or PayPal, no work screens, no Piano property type. Invoices and
+  job summaries are PDFs you save. **Check for updates** (Settings > Update)
+  asks GitHub only when you press it, installs a newer release after checking
+  its signature, and can go back to the version before.
+
+The two are the same code: one setting in `config.php` (`'edition' =>
+'home'`, written only by the Windows home edition when it first starts) turns the web features off on
+the server, not just in the menus.
 
 ## Running it locally
 
 Any PHP 8.1+ with `pdo_mysql`, `openssl` and `mbstring`, and any
-MySQL 5.7+ / MariaDB 10.4+. There is no build step, no composer and no npm.
+MySQL 5.7+ / MariaDB 10.3+. There is no build step, no composer and no npm.
 
 1. Create an empty database and a user with rights on it.
 2. Serve the folder. PHP's own server is enough, but **route it through

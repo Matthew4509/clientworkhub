@@ -139,7 +139,9 @@ cm_admin_nav('reminders');
   <?php 
 
  ?>
+  <?php if (!cm_home()): ?>
   <a class="btn btn-quiet" href="<?= e(cm_url('admin/smart-reminders.php')) ?>">Smart reminders</a>
+  <?php endif; ?>
   <button class="btn" type="button" data-modal-open="dlg-new-reminder">Set a reminder</button>
 </div>
 <?php 
@@ -153,6 +155,7 @@ cm_admin_nav('reminders');
 
 
  ?>
+<?php if (!cm_home()): ?>
 <div class="card" id="scheduled">
   <div class="card-head">
     <h2>Automatic emails to clients<?= $scheduled ? ' — ' . count($scheduled) : '' ?></h2>
@@ -236,6 +239,7 @@ cm_admin_nav('reminders');
     <?php endif; ?>
   </p>
 </div>
+<?php endif; ?>
 
 <div class="card">
   <h2>Open — <?= count($open) ?></h2>

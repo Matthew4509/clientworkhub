@@ -129,7 +129,7 @@ if (cm_post_too_large()) {
         cm_audit('settings.changed', '', null,
                  'portal logo set by ' . (string) $admin['email'] . ' — '
                  . $r['label'] . ' ' . $r['w'] . 'x' . $r['h'] . ', ' . cm_bytes_label($r['bytes']));
-        cm_flash('Logo saved — it is on every portal page now.' . (($r['note'] ?? '') !== '' ? ' ' . $r['note'] : ''));
+        cm_flash((cm_home() ? 'Logo saved — it is on your invoices now.' : 'Logo saved — it is on every portal page now.') . (($r['note'] ?? '') !== '' ? ' ' . $r['note'] : ''));
         cm_redirect('admin/settings.php');
     }
     $logoError = (string) $r['error'];
@@ -162,7 +162,8 @@ $spec = cm_setting_spec();
 
 
 
-$spec = array_filter($spec, static fn ($m) => !isset(cm_billing_groups()[$m['group'] ?? '']));
+$spec = array_filter($spec, static fn ($m, $k) => !isset(cm_billing_groups()[$m['group'] ?? ''])
+                                                && !cm_setting_home_hidden((string) $k, $m), ARRAY_FILTER_USE_BOTH);
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST'
     && isset($_POST['save_settings'])) {
@@ -283,7 +284,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST'
     cm_redirect('admin/settings.php');
 }
 
-$groups = cm_general_groups();
+$groups = array_diff_key(cm_general_groups(), cm_settings_groups_hidden());
 
 cm_head('Settings', '', true);
 cm_render_flashes();
@@ -746,7 +747,7 @@ cm_admin_subnav('settings', 'general', 'Settings');
           </div>
         <?php else: ?>
           <p class="muted small m-0 mb-8">No logo &mdash; the business name above
-          is the mark on every portal page.</p>
+          is the mark on every <?= cm_home() ? 'invoice' : 'portal page' ?>.</p>
           <button class="btn btn-sm" type="button" data-modal-open="dlg-logo">Upload a logo</button>
         <?php endif; ?>
         <div class="hint"><?= e(cm_logo_advice()) ?></div>
@@ -1013,6 +1014,7 @@ cm_admin_subnav('settings', 'general', 'Settings');
 
 
  ?>
+<?php if (!cm_home()):  ?>
 <dialog class="modal modal-wide" id="dlg-cron">
   <div class="modal-box">
     <div class="modal-head">
@@ -1084,6 +1086,7 @@ cm_admin_subnav('settings', 'general', 'Settings');
     </div>
   </div>
 </dialog>
+<?php endif; ?>
 
 <?php 
 

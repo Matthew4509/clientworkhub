@@ -176,6 +176,59 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         cm_redirect_recovery('admin/update.php#files');
     }
 
+
+
+
+    if (cm_home() && (string) ($_POST['action'] ?? '') === 'up_github_check') {
+        $chk = cm_update_github_check(CM_VERSION);
+        $_SESSION['cm_update_github'] = $chk + ['at' => time()];
+        if (!$chk['ok']) cm_flash($chk['error'], 'error');
+        cm_redirect_recovery('admin/update.php#files');
+    }
+
+    if (cm_home() && (string) ($_POST['action'] ?? '') === 'up_github_download') {
+
+        $chk = cm_update_github_check(CM_VERSION);
+        $_SESSION['cm_update_github'] = $chk + ['at' => time()];
+        if (!$chk['ok']) { cm_flash($chk['error'], 'error'); cm_redirect_recovery('admin/update.php#files'); }
+        if (empty($chk['newer'])) {
+            cm_flash('The newest release on GitHub is ' . $chk['version'] . ', and this copy already runs '
+                   . CM_VERSION . ' — nothing to fetch.', 'warn');
+            cm_redirect_recovery('admin/update.php#files');
+        }
+        $dl = cm_update_github_download($chk);
+        if (!$dl['ok']) {
+            cm_audit('update.refused', '', null, 'GitHub release ' . $chk['version'] . ' refused: ' . $dl['error']);
+            cm_flash($dl['error'], 'error');
+            cm_redirect_recovery('admin/update.php#files');
+        }
+        cm_audit('update.received', '', null, 'release ' . $dl['version'] . ' downloaded from GitHub and verified by '
+                 . (string) $admin['email'] . ($dl['note'] !== '' ? ' (signature NOT checked: ' . $dl['note'] . ')' : ' (signature verified)'));
+        cm_flash('Release ' . $dl['version'] . ' downloaded — '
+               . ($dl['note'] === '' ? 'it is signed with the release key and every file matches its checksum. '
+                                     : $dl['note'] . ' ')
+               . 'Read the box below, then apply it.', $dl['note'] !== '' ? 'warn' : 'ok');
+        cm_redirect_recovery('admin/update.php#files');
+    }
+
+    if (cm_home() && (string) ($_POST['action'] ?? '') === 'up_rollback') {
+        if (empty($_POST['understood'])) {
+            cm_flash('Tick the box to say you have read what this does.', 'error');
+            cm_redirect_recovery('admin/update.php#rollback');
+        }
+        $from = CM_VERSION;
+        $rb = cm_update_rollback_apply((string) $admin['email']);
+        if (!$rb['ok']) {
+            cm_flash($rb['error'], 'error');
+            cm_redirect_recovery('admin/update.php#rollback');
+        }
+        cm_audit('update.rolled_back', '', null, 'files put back from ' . $from . ' to ' . $rb['version']
+                 . ' by ' . (string) $admin['email']);
+        cm_flash('Client Work Hub is back on version ' . $rb['version'] . ' (' . $rb['written'] . ' files put back). '
+               . 'Your data was not touched; database updates the newer version made stay, and this version runs on them.');
+        cm_redirect_recovery('admin/update.php');
+    }
+
     if ((string) ($_POST['action'] ?? '') === 'up_check') {
         $chk = cm_update_check(CM_VERSION);
 
@@ -265,17 +318,31 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         }
         $stg = cm_update_extract($zipPath, $ins['files']);
         if (!$stg['ok']) { cm_flash($stg['error'], 'error'); cm_redirect_recovery('admin/update.php#files'); }
+
+        $kept = cm_home() ? cm_update_rollback_keep(CM_VERSION) : ['ok' => true, 'error' => ''];
+        if (!$kept['ok'] && cm_update_current_manifest()) {
+            cm_flash($kept['error'] . ' Nothing was changed.', 'error');
+            cm_redirect_recovery('admin/update.php#files');
+        }
         $res = cm_update_apply($stg['dir'], $ins['files'], (string) $admin['email']);
         if ($res['ok']) {
             cm_update_clear();
             cm_audit('update.applied', '', null, 'site files updated to ' . $ins['version']
                      . ' (' . $res['written'] . ' written, ' . count($res['removed']) . ' removed) by '
                      . (string) $admin['email']);
-            cm_flash('The site\'s files are now version ' . $ins['version'] . ' — '
-                   . $res['written'] . ' written, ' . count($res['removed']) . ' removed. '
-                   . ($ins['has_migrations'] ? 'Now check the database section below: if updates are '
+            $dbNote = $ins['has_migrations'] ? 'Now check the database section below: if updates are '
                                              . 'waiting, run them while you are here.'
-                                             : 'No database changes came with it.'));
+                                             : 'No database changes came with it.';
+            if (cm_home()) {
+
+                $run = cm_migrations_pending() ? cm_migration_run_pending() : ['ok' => true, 'applied' => []];
+                $dbNote = $run['ok']
+                    ? count($run['applied'] ?? []) . ' database update(s) ran with it.'
+                    : 'A database update failed: ' . (string) $run['error'] . ' See the database section below.';
+                if (!$kept['ok']) $dbNote .= ' (No copy to go back to could be kept: ' . $kept['error'] . ')';
+            }
+            cm_flash('The ' . (cm_home() ? 'application' : 'site') . '\'s files are now version ' . $ins['version'] . ' — '
+                   . $res['written'] . ' written, ' . count($res['removed']) . ' removed. ' . $dbNote);
         } else {
 
 
@@ -441,7 +508,7 @@ if (!$recovery) { cm_admin_nav('settings'); cm_admin_subnav('settings', 'update'
 
 <div class="card">
   <div class="card-head">
-    <h2>Where this site is up to</h2>
+    <h2>Where this <?= cm_home() ? 'copy' : 'site' ?> is up to</h2>
     <span class="spacer"></span>
     <?php if ($state['up_to_date']): ?>
       <span class="pill pill-approved">Database up to date</span>
@@ -498,7 +565,7 @@ $newsRow = static function (array $h): void { ?>
 
   <?php if (!cm_update_online_on()): ?>
     <p class="muted small">
-      This site runs version <b class="mono"><?= e(CM_VERSION) ?></b>. What each
+      This <?= cm_home() ? 'copy' : 'site' ?> runs version <b class="mono"><?= e(CM_VERSION) ?></b>. What each
       release changed is listed on
       <a href="<?= e(CM_RELEASES_URL) ?>" target="_blank" rel="noopener noreferrer">the releases page on GitHub</a>,
       where the release zips are downloaded from.
@@ -630,7 +697,7 @@ $newsRow = static function (array $h): void { ?>
 
   $hostMsg = cm_requirements_host_message((string) ($_SERVER['HTTP_HOST'] ?? ''));
   ?>
-  <?php if ($hostMsg !== ''): ?>
+  <?php if ($hostMsg !== '' && !cm_home()): ?>
     <details class="why mt-16">
       <summary>Send this to your hosting company</summary>
       <p class="muted small">
@@ -667,6 +734,8 @@ $cleanup = cm_cleanup_candidates();
 $anyRemovable = false;
 foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; } }
 ?>
+<?php  ?>
+<?php if (!cm_home()): ?>
   <div class="card" id="cleanup">
     <h2>Cleanup</h2>
     <p class="muted small">
@@ -735,6 +804,7 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
     <?php endif; ?>
     <?php endif;  ?>
   </div>
+<?php endif;  ?>
 
 <?php if ($failure !== ''): ?>
   <div class="note note-error">
@@ -781,7 +851,7 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
   <p class="muted small">
     A complete copy of every table, as a file your browser downloads. Nothing is
     written to the server, so no copy is left behind for anyone to find.
-    <?php if (cm_backup_can_gzip()): ?>
+    <?php if (cm_backup_can_gzip() && !cm_home()): ?>
       It is <b>compressed</b>, because phpMyAdmin — the tool you would restore
       with — has an upload limit you cannot raise, and it reads
       <span class="mono">.sql.gz</span> directly.
@@ -1015,8 +1085,9 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
  ?>
   <p class="hint mt-10">
     Putting one back: <a href="<?= e(cm_url('admin/restore.php')) ?>">Restore a backup</a>.
-    A plain backup can also be imported with phpMyAdmin; an encrypted one can
-    only be opened here, with its key.
+    <?php if (!cm_home()): ?>A plain backup can also be imported with phpMyAdmin; an encrypted one can
+    only be opened here, with its key.<?php else: ?>Keep the file somewhere other than this PC &mdash; a USB
+    stick, or a cloud folder.<?php endif; ?>
   </p>
 </div>
 
@@ -1027,8 +1098,13 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
 
  ?>
 <div class="card" id="files">
-  <h2>2. Update the site&rsquo;s files</h2>
+  <h2>2. Update the <?= cm_home() ? 'application' : 'site&rsquo;s files' ?></h2>
   <p class="muted small">
+    <?php if (cm_home()): ?>
+    This copy is version <b class="mono"><?= e(CM_VERSION) ?></b>. A newer release comes from GitHub when you
+    ask for it, is checked file by file before anything is touched, and your data is never written or removed.
+    The application is replaced; a copy of this version is kept so you can go back.
+    <?php else: ?>
     This site&rsquo;s files are version <b class="mono"><?= e(CM_VERSION) ?></b>.
     <?php if (cm_update_online_on()): ?>
     A newer release can be fetched online or uploaded from your
@@ -1042,6 +1118,7 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
     <?php endif; ?> and your own files
     (<span class="mono">config.php</span>, <span class="mono">storage/</span>,
     anything you added) are never written or removed.
+    <?php endif; ?>
   </p>
 
   <?php if (!cm_update_ready()): ?>
@@ -1069,12 +1146,12 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
     <div class="note note-info">
       <b>Release <span class="mono"><?= e($pendingInfo['version']) ?></span> is here and verified</b>
       &mdash; all <?= (int) $pendingInfo['count'] ?> files match their checksums.
-      Applying it will write <?= (int) $pendingInfo['count'] ?> files<?php
+      Applying it will write <?= (int) ($pendingInfo['writes'] ?? $pendingInfo['count']) ?> files<?php
         if ($pendingRemovals): ?> and remove <?= count($pendingRemovals) ?> the old
         release shipped and this one does not<?php endif; ?>.
-      <?= $pendingInfo['has_migrations']
-          ? 'It carries database update files — after the files land, run them in the database section below.'
-          : 'It brings no database changes.' ?>
+      <?= !$pendingInfo['has_migrations'] ? 'It brings no database changes.'
+          : (cm_home() ? 'Any database updates it brings run as part of applying it.'
+                       : 'It carries database update files — after the files land, run them in the database section below.') ?>
     </div>
 
     <?php if (!$newer): ?>
@@ -1101,9 +1178,11 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
       </p>
     <?php else: ?>
       <form method="post"
-            data-confirm="Replace this site's files with release <?= e($pendingInfo['version']) ?> now? Your config, storage and own files are not touched."
+            data-confirm="<?= cm_home()
+                ? 'Replace the application with release ' . e($pendingInfo['version']) . ' now? Your data is not touched.'
+                : 'Replace this site\'s files with release ' . e($pendingInfo['version']) . ' now? Your config, storage and own files are not touched.' ?>"
             data-progress="Verifying the release|Copying files|Finishing"
-            data-progress-title="Updating the site&rsquo;s files"
+            data-progress-title="Updating the <?= cm_home() ? 'application' : 'site&rsquo;s files' ?>"
             data-progress-done="Files updated">
         <?= cm_csrf_field() ?><?= cm_recovery_field() ?>
         <input type="hidden" name="action" value="up_apply">
@@ -1111,7 +1190,7 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
           <label class="caps-row">
             <input type="checkbox" name="understood" value="1" required>
             <span>
-              <b>I have the backup, and I understand this replaces the site&rsquo;s files.</b>
+              <b>I have the backup, and I understand this replaces the <?= cm_home() ? 'application' : 'site&rsquo;s files' ?>.</b>
               <span class="muted small">
                 The release was verified twice already and is verified once more
                 when you press the button. If a file cannot be written, the
@@ -1130,6 +1209,63 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
         <button class="btn btn-sm btn-quiet" type="submit">Throw this release away instead</button>
       </form>
     <?php endif; ?>
+
+  <?php elseif (cm_home()): ?>
+    <?php 
+          $ghSeen = $_SESSION['cm_update_github'] ?? null; ?>
+    <?php if (is_array($ghSeen) && !empty($ghSeen['ok']) && !empty($ghSeen['newer'])): ?>
+      <div class="note note-info">
+        <b>Version <span class="mono"><?= e((string) $ghSeen['version']) ?></span> is available</b>
+        (this copy runs <span class="mono"><?= e(CM_VERSION) ?></span>).
+        <?php if (trim((string) $ghSeen['title']) !== ''): ?><span class="d-block mt-6"><b><?= e((string) $ghSeen['title']) ?></b></span><?php endif; ?>
+        <?php if (trim((string) $ghSeen['notes']) !== ''): ?>
+          <span class="d-block mt-6 small prewrap"><?= e((string) $ghSeen['notes']) ?></span>
+        <?php endif; ?>
+        <a class="d-block mt-6 small" href="<?= e((string) $ghSeen['page']) ?>" target="_blank" rel="noopener noreferrer">The release on GitHub</a>
+      </div>
+      <form method="post" data-saving
+            data-progress="Fetching the release from GitHub|Checking its signature|Verifying every file"
+            data-progress-title="Downloading the update"
+            data-progress-done="Release downloaded and verified">
+        <?= cm_csrf_field() ?><?= cm_recovery_field() ?>
+        <input type="hidden" name="action" value="up_github_download">
+        <button class="btn" type="submit">Download version <?= e((string) $ghSeen['version']) ?></button>
+      </form>
+      <p class="hint">Refused unless it carries Client Work Hub&rsquo;s release signature, so a tampered
+      file cannot get past it.</p>
+    <?php else: ?>
+      <?php if (is_array($ghSeen) && !empty($ghSeen['ok'])): ?>
+        <p class="note note-ok mb-12">
+          <b>Up to date.</b> The newest release on GitHub is
+          <span class="mono"><?= e((string) $ghSeen['version']) ?></span> and this copy runs
+          <span class="mono"><?= e(CM_VERSION) ?></span>.
+        </p>
+      <?php endif; ?>
+      <h3>Check for updates</h3>
+      <p class="muted small">
+        Asks <a href="<?= e(CM_RELEASES_URL) ?>" target="_blank" rel="noopener noreferrer">the releases page on GitHub</a>
+        whether a newer version exists. Only when you press the button &mdash; Client Work Hub never goes
+        online on its own &mdash; and nothing about you or your data is sent.
+      </p>
+      <form method="post" data-saving>
+        <?= cm_csrf_field() ?><?= cm_recovery_field() ?>
+        <input type="hidden" name="action" value="up_github_check">
+        <button class="btn" type="submit">Check for updates</button>
+      </form>
+    <?php endif; ?>
+    <details class="why mt-16">
+      <summary>Or install a release zip you already have</summary>
+      <p class="muted small">
+        The <span class="mono">clientworkhub-x.y.z.zip</span> from the releases page, exactly as it
+        downloaded &mdash; not unpacked, not renamed. It is verified the same way.
+      </p>
+      <form method="post" enctype="multipart/form-data" data-saving>
+        <?= cm_csrf_field() ?><?= cm_recovery_field() ?>
+        <input type="hidden" name="action" value="up_upload">
+        <input type="file" name="release" accept=".zip,application/zip" required<?= cm_upload_limit_attrs() ?>>
+        <button class="btn mt-8" type="submit">Install it</button>
+      </form>
+    </details>
 
   <?php else: ?>
     <?php  ?>
@@ -1229,6 +1365,31 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
   <?php endif; ?>
 </div>
 
+<?php $rollbackTo = cm_home() ? cm_update_rollback_version() : ''; ?>
+<?php if ($rollbackTo !== ''): ?>
+<div class="card" id="rollback">
+  <h2>Go back to version <?= e($rollbackTo) ?></h2>
+  <p class="muted small">
+    The last update kept a copy of version <span class="mono"><?= e($rollbackTo) ?></span>. If something is
+    wrong with <span class="mono"><?= e(CM_VERSION) ?></span>, this puts that copy back. Your clients, jobs and
+    settings are not touched; database updates the newer version made stay, and the older version runs on them.
+  </p>
+  <form method="post"
+        data-confirm="Go back to version <?= e($rollbackTo) ?> now?"
+        data-progress="Checking the kept copy|Copying files|Finishing"
+        data-progress-title="Going back"
+        data-progress-done="Back on the earlier version">
+    <?= cm_csrf_field() ?><?= cm_recovery_field() ?>
+    <input type="hidden" name="action" value="up_rollback">
+    <label class="tick">
+      <input type="checkbox" name="understood" value="1" required>
+      <span>I understand this replaces the application&rsquo;s files with version <?= e($rollbackTo) ?>.</span>
+    </label>
+    <button class="btn btn-quiet mt-12" type="submit">Go back to <?= e($rollbackTo) ?></button>
+  </form>
+</div>
+<?php endif; ?>
+
 <?php 
 
  ?>
@@ -1237,9 +1398,14 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
 
   <?php if ($state['up_to_date']): ?>
     <p class="muted small">
+      <?php if (cm_home()): ?>
+      Nothing is waiting. Database updates run by themselves when Client Work Hub
+      starts and straight after an update is applied.
+      <?php else: ?>
       Nothing is waiting. Every update file on this server has been applied to
       this database — after you upload a newer version of the site, come back
       here and this section will have something in it.
+      <?php endif; ?>
     </p>
 
   <?php else: ?>
@@ -1288,7 +1454,8 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
           <?php endif; ?>
         <?php endforeach; ?>
         <span class="d-block mt-8">
-          Upload them again through cPanel → File Manager, then reload this page.
+          <?= cm_home() ? 'Install the release again from the download on GitHub (Install Client Work Hub.cmd), then reload this page.'
+                        : 'Upload them again through cPanel → File Manager, then reload this page.' ?>
         </span>
       </div>
 
@@ -1301,10 +1468,15 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
  ?>
       <div class="note note-error">
         <b>The update button is off until the failure above is dealt with.</b>
+        <?php if (cm_home()): ?>
+        Restore the backup you took before that attempt with <b>Restore a backup</b> above. Then come back
+        here and say so.
+        <?php else: ?>
         Restore the backup you took before that attempt — <b>phpMyAdmin →
         Import</b> in cPanel, or <span class="mono small">mysql -u USER -p
         DATABASE &lt; your-backup.sql</span> from a shell. Then come back here
         and say so.
+        <?php endif; ?>
       </div>
       <form method="post" data-confirm="Only do this if you have actually restored the backup. Clearing this warning turns the update button back on.">
         <?= cm_csrf_field() ?><?= cm_recovery_field() ?>
@@ -1423,6 +1595,7 @@ $updateRows = static function (array $list): void { ?>
   </p>
 </div>
 
+<?php if (!cm_home()): ?>
 <div class="card">
   <h2>Restoring a backup</h2>
   <?php 
@@ -1466,6 +1639,7 @@ $updateRows = static function (array $list): void { ?>
     it has the same access. Every use is recorded in the audit log.
   </p>
 </div>
+<?php endif; ?>
 <?php  ?>
 <?= cm_credential_tools_script_once() ?>
 <?php cm_foot(); ?>

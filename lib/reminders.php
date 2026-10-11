@@ -403,6 +403,9 @@ function cm_followups_waiting(): int
 
 function cm_followups_send_due(int $limit = CM_FOLLOWUP_BATCH): int
 {
+
+
+    if (cm_home()) return 0;
     require_once CM_LIB . '/emails.php';
     $sent = 0;
 

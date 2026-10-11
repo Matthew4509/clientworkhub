@@ -32,7 +32,7 @@ $spec  = cm_setting_spec();
 
 
 
-$groups = cm_billing_groups();
+$groups = array_diff_key(cm_billing_groups(), cm_settings_groups_hidden());
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     cm_require_csrf();

@@ -64,7 +64,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $handle = trim((string) ($_POST['handle'] ?? ''));
         $notes  = trim((string) ($_POST['notes'] ?? ''));
         $propertyKind = (string) ($_POST['property_kind'] ?? ($asset['property_kind'] ?? 'web'));
-        if (!isset(cm_property_kinds()[$propertyKind])) $propertyKind = 'web';
+        if (!isset(cm_property_kinds_offered((string) ($asset['property_kind'] ?? ''))[$propertyKind])) $propertyKind = 'web';
         $propertyData = cm_property_data_from_post('', $propertyKind);
 
 

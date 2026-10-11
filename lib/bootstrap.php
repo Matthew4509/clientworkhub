@@ -78,7 +78,10 @@ define('CM_LIB', __DIR__);
 
 
 
-const CM_VERSION = '0.3.19';
+
+
+
+const CM_VERSION = '0.3.20';
 
 
 
@@ -94,7 +97,15 @@ const CM_EDITION = 'B';
 
 
 
-$cmConfigFile = CM_ROOT . '/config.php';
+
+
+
+
+
+$cmDataDir = (string) getenv('CWH_DATA_DIR');
+define('CM_DATA', $cmDataDir !== '' && is_dir($cmDataDir) ? rtrim(str_replace('\\', '/', $cmDataDir), '/') : CM_ROOT);
+define('CM_STORAGE', CM_DATA . '/storage');
+$cmConfigFile = CM_DATA . '/config.php';
 if (!is_file($cmConfigFile)) {
     $cmInstaller = is_file(CM_ROOT . '/install.php');
     if ($cmInstaller && PHP_SAPI !== 'cli') {
@@ -134,6 +145,32 @@ function cm_config(string $path, $default = null)
         $node = $node[$key];
     }
     return $node;
+}
+
+
+
+
+
+
+
+
+
+
+
+function cm_home(): bool
+{
+    return cm_config('edition') === 'home';
+}
+
+
+
+function cm_home_hide(): void
+{
+    if (!cm_home()) return;
+    http_response_code(404);
+    header('Content-Type: text/plain; charset=utf-8');
+    if (function_exists('cm_send_security_headers')) cm_send_security_headers();
+    exit("Not found\n");
 }
 
 function cm_is_dev(): bool
@@ -399,6 +436,19 @@ function cm_asset_stamp(): string
 
 
 require_once CM_LIB . '/headers.php';
+
+
+
+
+if (cm_home() && PHP_SAPI !== 'cli') {
+    $cmPeer = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+    if (!($cmPeer === '::1' || str_starts_with($cmPeer, '127.'))) {
+        http_response_code(403);
+        header('Content-Type: text/plain; charset=utf-8');
+        cm_send_security_headers();
+        exit("Client Work Hub (home edition) only answers on this PC.\n");
+    }
+}
 
 require CM_LIB . '/db.php';
 require CM_LIB . '/csrf.php';

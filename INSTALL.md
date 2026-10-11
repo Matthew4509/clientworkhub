@@ -103,7 +103,36 @@ for it. Admin → Update shows it again after installing.
    command line: PHP version, encryption working, files intact, database up
    to date.
 
-## Running it on your own computer
+## On one Windows PC: the home edition
+
+The simplest way to use it on your own Windows 10 or 11 PC, with nothing to
+host and nothing else to install:
+
+1. From the Releases page, download **`clientworkhub-home-x.y.z.zip`**.
+2. Right-click it, **Extract All**, open the folder it makes, then the
+   **Client Work Hub x.y.z** folder inside it.
+3. Double-click **Install Client Work Hub.cmd**. If Windows warns about it,
+   choose *Run* (on a blue "Windows protected your PC" box, *More info* first,
+   then *Run anyway*). Setup installs for your Windows user only (no
+   administrator), offers a desktop shortcut, and lists Client Work Hub in
+   Settings > Apps. If the PC lacks Microsoft's Visual C++ Runtime, setup
+   offers to download it from Microsoft first (Windows asks permission).
+4. Open **Client Work Hub** from the Start menu. The first time, it asks for
+   your name, an email address to sign in with (nothing is ever sent to it),
+   a password and your time zone.
+
+It runs only while its window is open and answers only on that PC. Your data
+is in `%APPDATA%\Client Work Hub`; uninstalling leaves it there, and
+installing again carries on from it. Forgotten your password? Start menu →
+Client Work Hub → **Reset my password**. Updates: Settings → Update →
+**Check for updates**. Back up from the same screen: the file goes to your
+Downloads folder, so copy it to a USB stick or a cloud folder.
+
+The home edition has no client portal, no email, no online payments, no work
+screens and no Piano property type: everything that would reach a client or
+the internet is switched off.
+
+## Running it on your own computer (web edition)
 
 Any local PHP + MySQL stack works — XAMPP and Laragon are the common ones
 on Windows, MAMP on Mac.
@@ -167,9 +196,11 @@ curl -o /dev/null -w '%{http_code}
 `403` or `404` is right. `200` means the block is not being applied — the
 usual cause is that it sits in the wrong `server { }` for the hostname.
 
-## Updating to a new release
+## Updating to a new release (web edition)
 
-From 0.3.7 the whole update happens on one screen — Admin → Settings →
+The home edition updates itself from Settings → Update → **Check for
+updates** (see the home edition section above). On your own hosting, from
+0.3.7 the whole update happens on one screen — Admin → Settings →
 Update, top to bottom:
 
 1. **Take a backup first** — *Download a backup now*. Neither update button
@@ -200,7 +231,10 @@ the `zip` extension: extract the release zip over the top of the old files
 in File Manager (config.php and storage/ are not in the zip, so nothing of
 yours is touched), then run step 4.
 
-## If something goes wrong
+## If something goes wrong (web edition)
+
+At home, a forgotten password is fixed from the Start menu: Client Work Hub →
+**Reset my password**.
 
 - **A too-large upload shows a PHP "Warning" line above the message** — your
   host has `display_errors` switched on in php.ini. PHP prints that line

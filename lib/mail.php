@@ -56,6 +56,7 @@ require_once CM_LIB . '/unsubscribe.php';
 
 function cm_mail_enabled(): bool
 {
+    if (cm_home()) return false;
     $v = cm_setting('mail.enabled', '');
     return $v === '1' || $v === 1 || $v === true || $v === 'on';
 }
@@ -180,6 +181,13 @@ function cm_mail(string $to, string $subject, string $body, array $opts = []): b
         cm_mail_record($to, $subject, $kind, 'refused: demo mode is on', $clientId, $body);
         return false;
     }
+
+
+
+    if (cm_home()) {
+        cm_mail_record($to, $subject, $kind, 'refused: the home edition sends no email', $clientId, $body);
+        return false;
+    }
     $to       = cm_mail_header_safe($to);
     if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
         cm_mail_record($to, $subject, $kind, 'refused: bad address', $clientId, $body);
@@ -242,7 +250,7 @@ function cm_mail(string $to, string $subject, string $body, array $opts = []): b
 
 function cm_mail_spool(string $to, string $subject, string $headers, string $body, string $kind): void
 {
-    $dir = CM_ROOT . '/storage/mail';
+    $dir = CM_STORAGE . '/mail';
     if (!is_dir($dir)) @mkdir($dir, 0770, true);
     $file = $dir . '/' . date('Ymd-His') . '-' . $kind . '-' . substr(md5($to . microtime()), 0, 6) . '.txt';
     @file_put_contents($file,

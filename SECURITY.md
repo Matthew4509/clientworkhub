@@ -190,6 +190,18 @@ not a claim.
   releases signed with the same key, and the version inside the signed zip
   must be the version the feed named.
 
+**The Windows home edition** (0.3.20, `'edition' => 'home'`): it answers only
+on 127.0.0.1 (the launcher binds there, and the application refuses any other
+peer); everything that reaches a client or the internet answers 404 on the
+server, and email is refused rather than spooled. Its **Check for updates**
+asks the GitHub Releases API only when pressed, follows redirects only on
+GitHub's own hosts, and treats the download exactly as an upload: checksums,
+the release signature, and the version inside the zip must match the one in
+its name. The previous release is kept so it can be put back. Its data folder
+(`%APPDATA%\Client Work Hub`) holds `config.php` and a random database root
+password; they sit in that Windows user's profile, which other standard users
+on the PC cannot read (administrators can, as with any file on the PC).
+
 ## Headers
 
 Sent by PHP on every page (`cm_send_security_headers`), so the protection
@@ -222,14 +234,14 @@ or code.
 4. **A plain backup is not encrypted** — the download itself is the operator's
    to protect; credential fields inside it are encrypted with a key kept
    outside the database, and since 0.3.16 they are left out of it altogether
-   unless the operator ticks the box. The *encrypted* backup (below) closes
+   unless the operator ticks the box. The *encrypted* backup (above) closes
    this, and the plain one stays because it is the only copy that can be
    restored without this software running.
-6. **`secret_key` is trusted at whatever length it is given.** The installer
+5. **`secret_key` is trusted at whatever length it is given.** The installer
    writes 64 hex characters; a value typed into `config.php` by hand is
    accepted however short, because refusing it would send the application off
    to make a new key and silently blank every secret already encrypted with
    the old one. Settings → Update reports anything under 32 characters as a
    warning, with the order the change has to be made in.
-5. **Single admin by design today** — no per-user permissions until the
+6. **Single admin by design today** — no per-user permissions until the
    role system is built on the reserved column.

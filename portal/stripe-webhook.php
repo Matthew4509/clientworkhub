@@ -22,6 +22,7 @@
 
 declare(strict_types=1);
 require __DIR__ . '/../lib/bootstrap.php';
+cm_home_hide();
 require_once CM_LIB . '/payments.php';
 
 header('Content-Type: text/plain; charset=utf-8');

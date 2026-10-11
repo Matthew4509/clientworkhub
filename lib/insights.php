@@ -220,7 +220,7 @@ function cm_insight_blocks(): array
               'growth' => null, 'lines' => $lines];
 
 
-    $bk = $count('SELECT COUNT(*) FROM booking');
+    $bk = cm_home() ? 0 : $count('SELECT COUNT(*) FROM booking');
     if ($bk > 0) {
         $accepted = $count("SELECT COUNT(*) FROM booking WHERE status = 'accepted'");
         $quoted   = $sum('SELECT COALESCE(SUM(quoted_cents),0) FROM booking');
@@ -244,11 +244,14 @@ function cm_insight_blocks(): array
         $lines = [
             ['n' => $count("SELECT COUNT(*) FROM reminder WHERE kind='nudge' AND status='pending'"),
              'label' => 'waiting on you', 'href' => cm_url('admin/reminders.php')],
+        ];
+
+        if (!cm_home()) $lines = array_merge($lines, [
             ['n' => $count("SELECT COUNT(*) FROM reminder WHERE kind='email' AND sent_at IS NOT NULL"),
              'label' => 'follow-up emails sent', 'href' => cm_url('admin/reminders.php#scheduled')],
             ['n' => $count("SELECT COUNT(*) FROM reminder WHERE kind='email' AND sent_at IS NULL AND status='pending'"),
              'label' => 'follow-ups scheduled', 'href' => cm_url('admin/reminders.php#scheduled')],
-        ];
+        ]);
         $out[] = ['title' => 'Follow-ups', 'href' => cm_url('admin/reminders.php'),
                   'lead' => $rem . ' reminders set', 'growth' => null, 'lines' => $lines];
     }

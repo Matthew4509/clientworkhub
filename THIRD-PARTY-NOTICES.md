@@ -26,7 +26,7 @@ the original.
 They used to be served from Google Fonts, which meant every
 visitor's IP address reached a third party on every page — **including the
 public ones, where the visitor is a stranger who never agreed to anything.**
-Self-hosting closed that. Latin and latin-ext only: 214 KB across eight
+Self-hosting closed that. Latin and latin-ext only: 262 KB across nine
 files, which is less than one of the tracking scripts this application does
 not have either.
 

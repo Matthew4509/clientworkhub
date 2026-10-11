@@ -178,6 +178,7 @@ footer .grow { flex: 1; }
       <a href="#features">Features</a>
       <a href="#requirements">Requirements</a>
       <a href="#install">Install</a>
+      <a href="#home-edition">Windows</a>
       <a href="#licence">Licence</a>
     </nav>
     <a class="btn btn-primary" href="https://github.com/Matthew4509/clientworkhub/releases">Download</a>
@@ -191,10 +192,10 @@ footer .grow { flex: 1; }
     <h1>Run your client work<br>from one place.</h1>
     <p class="lead">Client Work Hub keeps your clients, their jobs, the passwords to their accounts, your working day and your invoices together, on hosting you own. It is free, and it is built for a business of one that wants room to grow.</p>
     <div class="actions">
-      <a class="btn btn-primary" href="https://github.com/Matthew4509/clientworkhub/releases">Download version 0.3.19</a>
+      <a class="btn btn-primary" href="https://github.com/Matthew4509/clientworkhub/releases">Download version 0.3.20</a>
       <a class="btn btn-secondary" href="Client-Work-Hub.pdf">Read this as a PDF</a>
     </div>
-    <p class="print-only">Version 0.3.19 · https://github.com/Matthew4509/clientworkhub</p>
+    <p class="print-only">Version 0.3.20 · https://github.com/Matthew4509/clientworkhub</p>
     <ul class="facts">
       <li>Free to use</li>
       <li>Runs on ordinary cPanel hosting</li>
@@ -351,7 +352,7 @@ footer .grow { flex: 1; }
     <div class="feature">
       <div class="text">
         <h3>Updates you control</h3>
-        <p>The site never checks the internet on its own. When a new release comes out, download it from GitHub and upload it on the Update screen. It is checked file by file, refused unless it carries the release signature (on servers whose PHP has the sodium extension, which most do), and it will not run until you have taken a backup.</p>
+        <p>On your own hosting, the site never checks the internet on its own. When a new release comes out, download it from GitHub and upload it on the Update screen. It is checked file by file, refused unless it carries the release signature (on servers whose PHP has the sodium extension, which most do), and it will not run until you have taken a backup.</p>
       </div>
       <figure><img class="shot" src="docs/images/update.jpg" width="1600" height="1000" alt="The update screen: the running version, a What's new card pointing to the releases page on GitHub, and a health check." loading="lazy"></figure>
     </div>
@@ -406,7 +407,7 @@ footer .grow { flex: 1; }
       <p>The same on any cPanel host. <a href="INSTALL.md">INSTALL.md</a> and <a href="SETUP.md">SETUP.md</a> go into every detail.</p>
     </div>
     <ol class="steps">
-      <li><b>Download the release.</b> Get <code>clientworkhub-0.3.19.zip</code> from the Releases page: <a href="https://github.com/Matthew4509/clientworkhub/releases">https://github.com/Matthew4509/clientworkhub/releases</a></li>
+      <li><b>Download the release.</b> Get <code>clientworkhub-0.3.20.zip</code> from the Releases page: <a href="https://github.com/Matthew4509/clientworkhub/releases">https://github.com/Matthew4509/clientworkhub/releases</a></li>
       <li><b>Create a database.</b> In cPanel, MySQL Databases: create a database and a user, and give the user all privileges on it.</li>
       <li><b>Upload and extract.</b> In File Manager, upload the zip and extract it where the app should live, for example <code>public_html/hub/</code>. If the domain already has a website, use a folder or a subdomain.</li>
       <li><b>Run the installer straight away.</b> Open <code>yoursite.com/hub/install.php</code>, enter the database details and your admin account. It creates the encryption key and deletes itself when it finishes.</li>
@@ -417,7 +418,23 @@ footer .grow { flex: 1; }
   </div>
 </section>
 
-<section id="licence">
+<section id="home-edition">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Or on one Windows PC: the home edition</h2>
+      <p>For one person on Windows 10 or 11, with nothing to host. It brings its own PHP and database, runs only while its window is open, and answers only on that PC.</p>
+    </div>
+    <ol class="steps">
+      <li><b>Download it.</b> Get <code>clientworkhub-home-0.3.20.zip</code> from the same Releases page.</li>
+      <li><b>Unzip it.</b> Right-click the zip, Extract All, open the folder it makes, then the <code>Client Work Hub 0.3.20</code> folder inside it.</li>
+      <li><b>Install it.</b> Double-click <code>Install Client Work Hub.cmd</code>. If Windows warns about it, choose Run (on a blue &ldquo;Windows protected your PC&rdquo; box, More info first). It installs for your Windows user, with no administrator unless the PC lacks Microsoft&rsquo;s Visual C++ Runtime (setup offers to install it, and Windows asks for permission), and adds Client Work Hub to the Start menu.</li>
+      <li><b>Open it and make your account.</b> Your name, an email to sign in with (nothing is sent to it), a password and your time zone.</li>
+    </ol>
+    <div class="note"><b>What it leaves out:</b> everything that reaches a client or the internet. No client portal or links, no email, no Stripe or PayPal, no work screens, no Piano property type. Invoices and job summaries are PDFs you save. <b>Updates:</b> Settings, Update, Check for updates; it asks GitHub only when you press it, checks the release's signature, and can go back to the version before. <b>Your data</b> stays in <code>%APPDATA%\Client Work Hub</code>, and uninstalling leaves it there.</div>
+  </div>
+</section>
+
+<section id="licence" class="alt">
   <div class="wrap">
     <div class="section-head">
       <h2>Licence</h2>
@@ -449,7 +466,7 @@ footer .grow { flex: 1; }
 
 <footer>
   <div class="wrap">
-    <span class="grow">Client Work Hub 0.3.19</span>
+    <span class="grow">Client Work Hub 0.3.20</span>
     <a href="https://github.com/Matthew4509/clientworkhub">GitHub</a>
     <a href="https://github.com/Matthew4509/clientworkhub/releases">Releases</a>
     <a href="LICENSE">Licence</a>

@@ -44,6 +44,11 @@ $admin = cm_require_admin_or_recovery();
 
 $dir = cm_restore_dir();
 if (!is_dir($dir)) @mkdir($dir, 0770, true);
+
+
+$home   = cm_home();
+$where  = $home ? str_replace('/', '\\', $dir) : 'storage/restore/';
+$byHand = $home ? 'File Explorer' : 'FTP or your host\'s File Manager';
 if (is_dir($dir) && !is_file($dir . '/.htaccess')) {
     @file_put_contents($dir . '/.htaccess',
         "Require all denied\n<IfModule !mod_authz_core.c>\nDeny from all\n</IfModule>\n");
@@ -80,10 +85,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         if ($err === UPLOAD_ERR_INI_SIZE || $err === UPLOAD_ERR_FORM_SIZE) {
 
             $cap = cm_restore_upload_cap();
-            $error = 'That file is bigger than this host will accept in one upload'
+            $error = 'That file is bigger than ' . ($home ? 'this copy' : 'this host') . ' will accept in one upload'
                    . ($cap > 0 ? ' (' . cm_bytes_label($cap) . ')' : '')
-                   . ', and that limit is set by your host, not by this site. Put the file in '
-                   . 'storage/restore/ with FTP or your host\'s File Manager instead — there is no limit that way — '
+                   . ($home ? '. Put the file in ' : ', and that limit is set by your host, not by this site. Put the file in ')
+                   . $where . ' with ' . $byHand . ' instead — there is no limit that way — '
                    . 'and it will appear in the list below.';
         } elseif ($err !== UPLOAD_ERR_OK || !is_uploaded_file((string) $up['tmp_name'])) {
             $error = 'Nothing arrived. Choose a backup file and try again.';
@@ -106,7 +111,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 $error = 'That is not a backup file. A backup from this site ends in .sql, .sql.gz or '
                        . CM_SEAL_EXT . '.';
             } elseif ($held >= 10) {
-                $error = 'storage/restore/ already holds ' . $held . ' backups. Delete the ones you do not need '
+                $error = $where . ' already holds ' . $held . ' backups. Delete the ones you do not need '
                        . '(the Delete button beside each), then upload this one again.';
             } elseif ($kind['kind'] === 'unknown' || !empty($kind['error'])) {
                 $error = (string) ($kind['error'] ?? 'That file is not a Client Work Hub backup.') . ' Nothing was kept.';
@@ -114,8 +119,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 $error = (string) $seen['error'] . ' Nothing was kept.';
             } elseif (!@move_uploaded_file($tmp, $dir . '/' . ($name = $kind['kind'] === 'gzip' && !preg_match('/\.sql\.gz$/i', $name)
                         ? preg_replace('/\.gz$/i', '', $name) . '.sql.gz' : $name))) {
-                $error = 'The file could not be saved into storage/restore/. Check the folder is writable, '
-                       . 'or put the file there yourself with File Manager.';
+                $error = 'The file could not be saved into ' . $where . '. Check the folder is writable, '
+                       . 'or put the file there yourself with ' . ($home ? 'File Explorer' : 'File Manager') . '.';
             } else {
                 @chmod($dir . '/' . $name, 0600);
                 $chosen = $name;
@@ -129,9 +134,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $path = cm_restore_path((string) ($_POST['file'] ?? ''));
         if ($path !== null && @unlink($path)) {
             cm_audit('db.restore.file_deleted', '', null, basename($path) . ' removed by ' . (string) $admin['email']);
-            cm_flash('That file has been deleted from the server.');
+            cm_flash('That file has been deleted from ' . ($home ? 'this PC' : 'the server') . '.');
         } else {
-            cm_flash('That file could not be deleted. Remove it with File Manager.', 'warn');
+            cm_flash('That file could not be deleted. Remove it with ' . ($home ? 'File Explorer' : 'File Manager') . '.', 'warn');
         }
         cm_redirect('admin/restore.php');
     }
@@ -375,7 +380,7 @@ $kind = null;
 if ($report === null && $chosen !== '') {
     $path = cm_restore_path($chosen);
     if ($path === null) {
-        if ($error === '') $error = 'That file is no longer in storage/restore/.';
+        if ($error === '') $error = 'That file is no longer in ' . $where . '.';
         $chosen = '';
     } else {
         $kind = cm_restore_identify($path);
@@ -429,8 +434,8 @@ cm_admin_subnav('settings', 'update', 'Restore a backup');
       that backup was taken.
     </div>
     <p class="hint">
-      If you uploaded the file, <b>delete it from storage/restore/</b> below.
-      A plain backup left on the server is the whole database sitting in the open.
+      If you uploaded the file, <b>delete it from <?= $home ? 'the list' : 'storage/restore/' ?></b> below.
+      A plain backup left <?= $home ? 'there' : 'on the server' ?> is the whole database sitting in the open.
     </p>
   </div>
 <?php endif; ?>
@@ -453,13 +458,13 @@ cm_admin_subnav('settings', 'update', 'Restore a backup');
              accept=".sql,.gz,<?= e(CM_SEAL_EXT) ?>" required<?= cm_upload_limit_attrs() ?>>
       <div class="hint">
         <?php if ($cap > 0): ?>
-          This host accepts uploads up to <b><?= e(cm_bytes_label($cap)) ?></b>.
-          A bigger file goes in <span class="mono">storage/restore/</span> by FTP
-          or File Manager instead &mdash; there is no limit that way, and it
+          <?= $home ? 'This copy' : 'This host' ?> accepts uploads up to <b><?= e(cm_bytes_label($cap)) ?></b>.
+          A bigger file goes in <span class="mono"><?= e($where) ?></span> by
+          <?= $home ? 'File Explorer' : 'FTP or File Manager' ?> instead &mdash; there is no limit that way, and it
           appears in the list below.
         <?php else: ?>
-          A file too big to upload goes in <span class="mono">storage/restore/</span>
-          by FTP or File Manager instead, and appears in the list below.
+          A file too big to upload goes in <span class="mono"><?= e($where) ?></span>
+          by <?= $home ? 'File Explorer' : 'FTP or File Manager' ?> instead, and appears in the list below.
         <?php endif; ?>
       </div>
     </div>
@@ -467,7 +472,7 @@ cm_admin_subnav('settings', 'update', 'Restore a backup');
   </form>
 
   <?php if ($files): ?>
-    <h3 class="mt-16">Files on the server</h3>
+    <h3 class="mt-16">Files <?= $home ? 'waiting here' : 'on the server' ?></h3>
     <?php foreach ($files as $f): ?>
       <div class="list-row">
         <div>
@@ -503,12 +508,12 @@ cm_admin_subnav('settings', 'update', 'Restore a backup');
     <p class="hint mt-10">
       <b>Delete them when you are done.</b> A sealed backup here is unreadable
       without its key; a plain one is every client&rsquo;s details and every
-      password hash, sitting on the web server.
+      password hash, sitting <?= $home ? 'in a folder on this PC' : 'on the web server' ?>.
     </p>
   <?php else: ?>
     <div class="empty-state mt-16">
       <h3>No files waiting</h3>
-      <p>Upload one above, or put it in <span class="mono">storage/restore/</span>.</p>
+      <p>Upload one above, or put it in <span class="mono"><?= e($where) ?></span>.</p>
     </div>
   <?php endif; ?>
 </div>
@@ -557,7 +562,7 @@ cm_admin_subnav('settings', 'update', 'Restore a backup');
         Roughly <?= e($hunt['left']) ?> left if it is near the end of the list.
         <p class="hint">
           Leave this page open. It carries on by itself &mdash; each step is a
-          few seconds long so that nothing on your host can time it out. You can
+          few seconds long so that nothing <?= $home ? 'on this PC' : 'on your host' ?> can time it out. You can
           stop and come back to it.
         </p>
         <form method="post" id="hunt-form">
@@ -779,6 +784,7 @@ cm_admin_subnav('settings', 'update', 'Restore a backup');
       move is to restore another copy, or the backup you took before starting.
       That is why the button waits for one.</p>
   </div>
+  <?php if (!$home): ?>
   <div class="card">
     <h2>The other way in</h2>
     <p class="small">A <b>plain</b> .sql or .sql.gz backup can also be imported
@@ -786,6 +792,7 @@ cm_admin_subnav('settings', 'update', 'Restore a backup');
       this site to be running at all. A <b>sealed</b> one cannot: only this site
       can open it, and only with its key.</p>
   </div>
+  <?php endif; ?>
 </aside>
 </div>
 

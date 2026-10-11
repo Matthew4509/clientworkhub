@@ -112,6 +112,7 @@ function cm_tutorial_screen(): string
 
 function cm_tours(): array
 {
+    $home = cm_home();
     return [
 
     'general' => [
@@ -146,7 +147,7 @@ function cm_tours(): array
                       . 'the screen.'],
 
             ['title' => 'Set-up can wait',
-             'body'  => 'Services, onboarding, email templates and settings are all under '
+             'body'  => ($home ? 'Services and settings are' : 'Services, onboarding, email templates and settings are all') . ' under '
                       . '<b>Set up</b> in the sidebar. None of it is needed to add a client and '
                       . 'get on with the work.',
              'tip'   => 'Build a service when you notice yourself typing the same job twice.'],
@@ -184,8 +185,11 @@ function cm_tours(): array
             ['title' => 'Reminders',
              'body'  => 'Anything you asked to be reminded about, plus the client follow-ups that '
                       . 'are due.',
-             'tip'   => 'Scheduled emails go out when you open this screen. A message due on a '
-                      . 'day you never sign in goes the next day you do — late, not lost.'],
+             'tip'   => $home
+                 ? 'A reminder due on a day you never open the application is still here the next '
+                   . 'day you do — late, not lost.'
+                 : 'Scheduled emails go out when you open this screen. A message due on a '
+                   . 'day you never sign in goes the next day you do — late, not lost.'],
 
             ['title' => 'What the work is worth',
              'body'  => 'Value against time, so the day has a number on it as well as a list.',
@@ -223,9 +227,13 @@ function cm_tours(): array
              'tip'   => 'The same facts appear on the job and the task screen.'],
 
             ['title' => 'Value, and the history',
-             'body'  => 'What their work is worth, and a record that merges the emails the '
-                      . 'application sent with the conversations you logged yourself.',
-             'tip'   => 'If a client has unsubscribed, every tab here says so in red.'],
+             'body'  => $home
+                 ? 'What their work is worth, and a record of the conversations you logged yourself.'
+                 : 'What their work is worth, and a record that merges the emails the '
+                   . 'application sent with the conversations you logged yourself.',
+             'tip'   => $home
+                 ? 'Log a call the moment you hang up; a year later it is the whole story.'
+                 : 'If a client has unsubscribed, every tab here says so in red.'],
         ],
     ],
 

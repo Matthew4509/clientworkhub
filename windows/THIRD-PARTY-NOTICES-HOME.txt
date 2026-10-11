@@ -1,0 +1,37 @@
+Client Work Hub, home edition: the other programs in this download
+=================================================================
+
+Client Work Hub itself is under the PolyForm Shield License 1.0.0 (app\LICENSE), and
+app\THIRD-PARTY-NOTICES.md lists the parts of other people's work inside the application.
+
+The home edition also carries two separate programs, unmodified, in runtime\. They run
+beside Client Work Hub on this PC; Client Work Hub talks to them and is not part of them.
+
+runtime\php\  PHP 8.5 (Windows, non-thread-safe, x64), from windows.php.net
+    Licence: the PHP License 3.01, in runtime\php\license.txt. The code that is part of
+    PHP's own source is covered in runtime\php\readme-redist-bins.txt.
+    PHP for Windows is also built with these libraries, whose full licence texts are in
+    runtime\php\THIRD-PARTY-LICENCES.txt:
+      OpenSSL 3.5 (libcrypto-3-x64.dll, libssl-3-x64.dll)  Apache License 2.0
+      libssh2 1.11 (libssh2.dll)                           BSD 3-clause
+      nghttp2 (nghttp2.dll)                                MIT
+      Brotli (brotlicommon.dll, brotlidec.dll)             MIT
+      libsodium 1.0 (libsodium.dll)                        ISC
+      curl and Zstandard (inside php_curl.dll)             curl licence, BSD 3-clause
+      zlib, libxml2, GNU libiconv (inside php8.dll)        zlib, MIT, LGPL 2.1
+      Oniguruma (inside php_mbstring.dll)                  BSD 2-clause
+      libzip, bzip2 (inside php_zip.dll)                   BSD 3-clause, bzip2 licence
+      FreeType, libjpeg-turbo, libpng, libwebp, libavif,
+      libXpm (inside php_gd.dll)                           their own licences, in the file
+
+runtime\mariadb\  MariaDB Server 11.4 (Windows x64), from mariadb.org
+    Licence: the GNU General Public License version 2, in runtime\mariadb\COPYING;
+    credits and the licences of its own parts in runtime\mariadb\CREDITS and THIRDPARTY.
+    Only the server, the setup tool, the command-line client and the admin tool are
+    included, unmodified. The complete source code of this exact version is published
+    alongside this download on the Client Work Hub releases page, and by MariaDB at
+    https://archive.mariadb.org/ (the mariadb-11.4.4 folder, "source").
+
+Microsoft Edge and the Microsoft Visual C++ Runtime are NOT included. Client Work Hub uses
+the Edge already on Windows, and setup offers to download the runtime from Microsoft when
+this PC does not have it.

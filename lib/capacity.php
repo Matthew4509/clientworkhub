@@ -58,11 +58,12 @@ function cm_capacity_modes(): array
             'label' => 'Take everything, but quote honest dates',
             'blurb' => 'Still never refuses work. When the days are full the start slides later '
                      . 'or the delivery stretches, so a seven-day package might be quoted as '
-                     . 'fourteen — and the client is told that before they buy.',
+                     . (cm_home() ? 'fourteen, and the date you give the client says so.'
+                                  : 'fourteen — and the client is told that before they buy.'),
         ],
         'restrict' => [
             'label' => 'Stop taking work when full',
-            'blurb' => 'Refuses bookings that will not fit inside your hours plus the overtime '
+            'blurb' => (cm_home() ? 'Says no to work' : 'Refuses bookings') . ' that will not fit inside your hours plus the overtime '
                      . 'allowance below. Only choose this when you actually want to turn work '
                      . 'away — it is the one setting here that can cost you a sale.',
         ],

@@ -72,6 +72,17 @@ function cm_property_default_kind_choices(): array
     return $choices;
 }
 
+
+
+
+
+function cm_property_kinds_offered(string $keep = ''): array
+{
+    $choices = cm_property_default_kind_choices();
+    if (cm_home() && $keep !== 'piano') unset($choices['piano']);
+    return $choices;
+}
+
 function cm_register_visibility_choices(): array
 {
     return ['show' => 'Show Cash register', 'hide' => 'Hide Cash register'];
@@ -166,7 +177,7 @@ function cm_setting_spec(): array
     return [
         'property.default_kind' => [
             'group' => 'properties', 'label' => 'Default property type',
-            'type' => 'choice', 'choices' => 'cm_property_default_kind_choices',
+            'type' => 'choice', 'choices' => 'cm_property_kinds_offered',
             'hint' => 'Preselects the most common kind when you add a property. You can change it in one click on any property.',
         ],
 
@@ -295,7 +306,9 @@ function cm_setting_spec(): array
         ],
         'public.business_name' => [
             'group' => 'public', 'label' => 'Business name', 'type' => 'text',
-            'hint' => 'The heading on the portal. Falls back to your email From name.',
+            'hint' => cm_home()
+                ? 'On your invoices and receipts, when Settings → Invoicing has no legal or trading name.'
+                : 'The heading on the portal. Falls back to your email From name.',
         ],
         'public.intro' => [
             'group' => 'public', 'label' => 'One line about what you do', 'type' => 'text',
@@ -303,11 +316,15 @@ function cm_setting_spec(): array
                     . 'shows. One sentence.',
         ],
         'public.email' => [
-            'group' => 'public', 'label' => 'Contact email shown on the portal', 'type' => 'text',
+            'group' => 'public', 'type' => 'text',
+            'label' => cm_home() ? 'Contact email on your invoices' : 'Contact email shown on the portal',
         ],
         'public.phone' => [
-            'group' => 'public', 'label' => 'Contact phone shown on the portal', 'type' => 'text',
-            'hint' => 'Both optional, and both appear in the footer of every portal page. '
+            'group' => 'public', 'type' => 'text',
+            'label' => cm_home() ? 'Contact phone on your invoices' : 'Contact phone shown on the portal',
+            'hint' => cm_home()
+                ? 'Both optional, and both print on your invoices and receipts. Leave empty to show neither.'
+                : 'Both optional, and both appear in the footer of every portal page. '
                     . 'Leave empty to show neither.',
         ],
 
@@ -374,7 +391,7 @@ function cm_setting_spec(): array
 
 
             'choices' => 'cm_capacity_modes',
-            'hint' => 'Only the last one can refuse a booking. If the dates look wrong, the '
+            'hint' => 'Only the last one can refuse ' . (cm_home() ? 'work' : 'a booking') . '. If the dates look wrong, the '
                     . 'usual cause is the time set on a Service, not this setting.',
         ],
         'capacity.overtime_minutes' => [
@@ -672,7 +689,7 @@ function cm_general_groups(): array
 
     'appearance' => ['title' => 'Appearance',
                      'blurb' => 'How this application looks to you. It changes nothing about '
-                              . 'what it does, and nothing your clients see in an email.'],
+                              . (cm_home() ? 'what it does.' : 'what it does, and nothing your clients see in an email.')],
     'properties' => ['title' => 'Properties',
                      'blurb' => 'Choose the kind of property you work with most. Each kind shows only the details useful for that work.'],
     'register' => ['title' => 'Cash register',
@@ -733,7 +750,9 @@ function cm_general_groups(): array
 
 
 
-    'public' => ['title' => 'Your client portal',
+    'public' => cm_home() ? ['title' => 'Your details on invoices',
+                 'blurb' => 'The name, contact details and logo printed on your invoices and receipts.']
+               : ['title' => 'Your client portal',
                  'parked' => !cm_public_enabled_safe(),
                  'blurb' => 'Off by default, and most installs leave it off: '
                           . 'many people take payment through Fiverr or '
@@ -742,6 +761,26 @@ function cm_general_groups(): array
                           . 'somewhere else: your published services, a contact form, and a '
                           . 'booking form. There is deliberately no sign-in link on it.'],
     ];
+}
+
+
+
+
+function cm_settings_groups_hidden(): array
+{
+    return cm_home() ? ['mail' => true, 'payments' => true] : [];
+}
+
+
+
+
+function cm_setting_home_hidden(string $key, array $meta): bool
+{
+    if (!cm_home()) return false;
+    $g = (string) ($meta['group'] ?? '');
+    if (isset(cm_settings_groups_hidden()[$g])) return true;
+    return $g === 'public'
+        && !in_array($key, ['public.business_name', 'public.email', 'public.phone'], true);
 }
 
 
@@ -1044,7 +1083,7 @@ function cm_app_key_source(): array
 
 
 
-    $file = CM_ROOT . '/storage/appkey.php';
+    $file = CM_STORAGE . '/appkey.php';
     if (is_file($file)) {
         $stored = @include $file;
         if (is_string($stored) && strlen(trim($stored)) >= 32) {
@@ -1073,7 +1112,7 @@ function cm_app_key_from(string $source): string
 
 function cm_storage_seal(): void
 {
-    $dir = CM_ROOT . '/storage';
+    $dir = CM_STORAGE;
     if (!is_dir($dir)) @mkdir($dir, 0770, true);
     if (!is_dir($dir)) return;
     $deny = $dir . '/.htaccess';
@@ -1100,7 +1139,7 @@ function cm_app_key(): string
         return $key = cm_app_key_from($have['value']);
     }
 
-    $file = CM_ROOT . '/storage/appkey.php';
+    $file = CM_STORAGE . '/appkey.php';
     cm_storage_seal();
 
     $new = bin2hex(random_bytes(32));

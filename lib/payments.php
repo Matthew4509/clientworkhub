@@ -82,6 +82,7 @@ function cm_paypal_ready(): bool
 
 function cm_pay_providers(): array
 {
+    if (cm_home()) return [];
     $out = [];
     if (cm_stripe_ready()) $out['stripe'] = ['label' => 'Pay by card', 'via' => 'Stripe'];
     if (cm_paypal_ready()) $out['paypal'] = ['label' => 'Pay with PayPal', 'via' => 'PayPal'];

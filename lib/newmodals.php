@@ -366,7 +366,7 @@ function cm_new_modals(string $base): void
               <label class="lbl" for="s_desc">Description <span class="muted">(optional)</span></label>
               <textarea id="s_desc" name="public_blurb" rows="3" class="f-full" maxlength="500"
                         placeholder="Briefly describe what this service includes…"></textarea>
-              <div class="hint">Shown on the client portal, if you use it.</div>
+              <?php if (!cm_home()): ?><div class="hint">Shown on the client portal, if you use it.</div><?php endif; ?>
             </div>
             <?php 
 

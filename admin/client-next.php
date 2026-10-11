@@ -234,6 +234,7 @@ echo cm_crumbs_html([
 
 
  ?>
+        <?php if (!cm_home()): ?>
         <form method="post" class="inline">
           <?= cm_csrf_field() ?>
           <input type="hidden" name="action" value="send_onboarding">
@@ -247,6 +248,7 @@ echo cm_crumbs_html([
           <?php endif; ?>
           <button class="btn btn-quiet" type="submit">Ask them for it instead</button>
         </form>
+        <?php endif; ?>
       </div>
     </div>
   </section>

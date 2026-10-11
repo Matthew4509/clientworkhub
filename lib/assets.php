@@ -111,7 +111,7 @@ function cm_property_templates(): array
 function cm_property_default_kind(): string
 {
     $kind = (string) cm_setting('property.default_kind', 'web');
-    return isset(cm_property_kinds()[$kind]) ? $kind : 'web';
+    return isset(cm_property_kinds_offered()[$kind]) ? $kind : 'web';
 }
 
 function cm_property_data_decode(?string $stored): array
@@ -956,7 +956,7 @@ function cm_asset_edit_window_html(array $asset, ?array $credential, array $erro
     <div class="row">
       <label class="lbl" for="property_kind">Property type</label>
       <select id="property_kind" name="property_kind" class="f-full" data-property-kind-picker>
-        <?php foreach (cm_property_kinds() as $key => $label): ?>
+        <?php foreach (cm_property_kinds_offered($pickedKind) as $key => $label): ?>
           <option value="<?= e($key) ?>" <?= $pickedKind === $key ? 'selected' : '' ?>><?= e($label) ?></option>
         <?php endforeach; ?>
       </select>
@@ -1364,7 +1364,7 @@ function cm_asset_add_from_post(int $clientId, string $prefix, string $actor): a
     $recovery = trim((string) ($_POST[$prefix . 'recovery'] ?? ''));
     $notes    = trim((string) ($_POST[$prefix . 'notes'] ?? ''));
     $propertyKind = (string) ($_POST[$prefix . 'property_kind'] ?? cm_property_default_kind());
-    if (!isset(cm_property_kinds()[$propertyKind])) $propertyKind = cm_property_default_kind();
+    if (!isset(cm_property_kinds_offered()[$propertyKind])) $propertyKind = cm_property_default_kind();
     $propertyData = cm_property_data_from_post($prefix, $propertyKind);
     if (!isset(cm_asset_types()[$type])) $type = 'other';
 
@@ -1517,7 +1517,7 @@ function cm_asset_add_form_html(string $prefix, string $action, array $errors, b
 {
     $p = static fn(string $f): string => e((string) ($_POST[$prefix . $f] ?? ''));
     $pickedKind = (string) ($_POST[$prefix . 'property_kind'] ?? cm_property_default_kind());
-    if (!isset(cm_property_kinds()[$pickedKind])) $pickedKind = cm_property_default_kind();
+    if (!isset(cm_property_kinds_offered()[$pickedKind])) $pickedKind = cm_property_default_kind();
     ob_start();
     echo cm_credential_tools_script_once();
     ?>
@@ -1527,7 +1527,7 @@ function cm_asset_add_form_html(string $prefix, string $action, array $errors, b
         <div class="row">
           <label class="lbl" for="<?= e($prefix) ?>property_kind">Property type</label>
           <select id="<?= e($prefix) ?>property_kind" name="<?= e($prefix) ?>property_kind" class="f-full" data-property-kind-picker>
-            <?php foreach (cm_property_kinds() as $key => $label): ?>
+            <?php foreach (cm_property_kinds_offered() as $key => $label): ?>
               <option value="<?= e($key) ?>" <?= $pickedKind === $key ? 'selected' : '' ?>><?= e($label) ?></option>
             <?php endforeach; ?>
           </select>

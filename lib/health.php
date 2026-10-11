@@ -28,6 +28,9 @@ require_once CM_LIB . '/requirements.php';
 
 function cm_installer_present(): bool
 {
+
+
+    if (cm_home()) return false;
     return is_file(CM_ROOT . '/install.php');
 }
 
@@ -129,6 +132,9 @@ function cm_cleanup_candidates(): array
 
     $out = [];
     foreach ($offer as $key => $meta) {
+
+
+        if ($key === 'install.php' && cm_home()) continue;
         $abs = CM_ROOT . '/' . $key;
         if (!is_file($abs)) continue;
 
@@ -201,7 +207,7 @@ function cm_storage_probe(): ?bool
 
     if (!function_exists('curl_init') || PHP_SAPI === 'cli' || PHP_SAPI === 'cli-server') return $answer = null;
     $marker = 'cwh-storage-probe';
-    $file = CM_ROOT . '/storage/probe.txt';
+    $file = CM_STORAGE . '/probe.txt';
     if (!is_file($file)) @file_put_contents($file, $marker);
     if (!is_file($file)) return $answer = null;
     $ch = curl_init(cm_url('storage/probe.txt'));
@@ -275,7 +281,8 @@ function cm_health_checks(bool $probe = false): array
             : implode(', ', $optional) . ' are all available, so every feature works.',
         'fix'   => $absent
             ? 'The application runs without these — this is a note, not a fault. '
-              . 'cPanel → Select PHP Version → Extensions to turn them on.'
+              . (cm_home() ? 'They come with the home edition: install it again to put them back.'
+                           : 'cPanel → Select PHP Version → Extensions to turn them on.')
             : '',
     ];
 
@@ -334,7 +341,7 @@ function cm_health_checks(bool $probe = false): array
     ];
 
 
-    $stor = CM_ROOT . '/storage';
+    $stor = CM_STORAGE;
     $storOk = is_dir($stor) && is_writable($stor);
     $denyOk = is_file($stor . '/.htaccess');
     $closed = ($storOk && $probe) ? cm_storage_probe() : null;
@@ -365,7 +372,8 @@ function cm_health_checks(bool $probe = false): array
         'detail' => cm_installer_present()
             ? 'install.php is still on the server. Remove it below — an installer '
               . 'on a working site is a takeover button the day any of its checks regress.'
-            : 'install.php is gone, as it should be after an install.',
+            : (cm_home() ? 'The home edition sets itself up without install.php, and refuses its address.'
+                         : 'install.php is gone, as it should be after an install.'),
         'fix'   => 'Remove it in the Cleanup section below.',
     ];
 
@@ -379,7 +387,9 @@ function cm_health_checks(bool $probe = false): array
             'detail' => $bad
                 ? $bad . ' of ' . $files['total'] . ' files are missing or did not arrive completely.'
                 : 'All ' . $files['total'] . ' files match the release exactly.',
-            'fix'   => 'Upload the release again through cPanel → File Manager, then reload this page.',
+            'fix'   => cm_home()
+                ? 'Install the release again from the download on GitHub (Install Client Work Hub.cmd); your data is kept.'
+                : 'Upload the release again through cPanel → File Manager, then reload this page.',
         ];
     } else {
         $checks[] = [
@@ -392,7 +402,7 @@ function cm_health_checks(bool $probe = false): array
     }
 
 
-    $checks[] = [
+    if (!cm_home()) $checks[] = [
         'label' => 'Email',
         'state' => cm_mail_enabled() ? 'ok' : 'warn',
         'detail' => cm_mail_enabled()

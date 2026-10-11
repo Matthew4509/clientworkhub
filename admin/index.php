@@ -302,7 +302,7 @@ try {
                      [date('Y-m-d H:i:s', strtotime('-7 days'))]);
 } catch (Throwable $ex) {}
 ?>
-<?php if ($obBack): ?>
+<?php if ($obBack && !cm_home()): ?>
   <div class="note note-ok">
     <b><?= count($obBack) === 1
         ? e(cm_client_display_name(['id' => 0, 'first_name' => $obBack[0]['first_name'],
@@ -518,7 +518,8 @@ try {
 
 
  ?>
-  <div class="split-2 mb-16">
+  <div class="<?= cm_home() ? '' : 'split-2 ' ?>mb-16">
+    <?php if (!cm_home()): ?>
     <section class="card m-0" id="messages-tile">
       <div class="card-head">
         <h2>Messages</h2>
@@ -544,6 +545,7 @@ try {
         <?php endforeach; ?>
       <?php endif; ?>
     </section>
+    <?php endif; ?>
     <section class="card m-0">
       <h2>Coming up</h2>
       <?php if (!$upcomingAppts): ?>

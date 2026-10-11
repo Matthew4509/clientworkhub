@@ -29,6 +29,14 @@ if (cm_current_user()) {
 
 
 
+if (cm_home() && (int) cm_val('SELECT COUNT(*) FROM account') === 0) {
+    cm_redirect('account/first-run.php');
+}
+$forgotHint = cm_home() ? 'or reset it from the Start menu (Client Work Hub, Reset my password).'
+                        : 'or use the “forgot your password” link below.';
+
+
+
 $returnTo = cm_safe_return($_GET['return'] ?? ($_POST['return'] ?? ''));
 $afterLogin = $returnTo !== '' ? ltrim($returnTo, '/') : 'admin/';
 
@@ -60,8 +68,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['password_l
     $inside = true;
     if ($tooMany) {
         header('Retry-After: 900');
-        $errors['email'] = 'Too many attempts. Wait fifteen minutes and try again, '
-                         . 'or use the “forgot your password” link below.';
+        $errors['email'] = 'Too many attempts. Wait fifteen minutes and try again, ' . $forgotHint;
     } elseif ($email === '' || $password === '') {
         $errors['email'] = 'Enter your email address and password.';
     } else {
@@ -73,8 +80,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['password_l
 
 
         header('Retry-After: 900');
-        $errors['email'] = 'Too many attempts. Wait fifteen minutes and try again, '
-                         . 'or use the “forgot your password” link below.';
+        $errors['email'] = 'Too many attempts. Wait fifteen minutes and try again, ' . $forgotHint;
     } elseif (!$tooMany && $email !== '' && $password !== '') {
 
         $account = cm_row('SELECT * FROM account WHERE email = ?', [$email]);
@@ -208,8 +214,14 @@ cm_render_flashes();
 
     <div class="actions">
       <button class="btn" type="submit" name="password_login" value="1">Sign in</button>
+      <?php if (!cm_home()): ?>
       <a class="btn btn-quiet" href="<?= e(cm_url('account/forgot.php')) ?>">Forgot your password?</a>
+      <?php endif; ?>
     </div>
+    <?php if (cm_home()): ?>
+      <p class="hint mt-12"><b>Forgotten your password?</b> Close this window, open the Start menu and run
+      <b>Client Work Hub &rarr; Reset my password</b>. It works only on this PC, and nothing is sent anywhere.</p>
+    <?php endif; ?>
   </form>
 </div>
 

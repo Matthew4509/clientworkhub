@@ -368,6 +368,7 @@ $openTwo   = $showCodes || (string) ($_GET['open'] ?? '') === 'twostep';
         <input type="hidden" name="action" value="start">
         <div class="caps-pick">
           <?php foreach (cm_tfa_methods() as $key => $m):
+              if ($key === 'email' && cm_home()) continue;
               $off = $key === 'email' && !cm_mail_enabled(); ?>
             <label class="caps-row">
               <input type="radio" name="method" value="<?= e($key) ?>"

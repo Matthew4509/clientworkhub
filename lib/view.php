@@ -293,16 +293,27 @@ function cm_foot(): void
       </div>
       <button class="modal-x" type="button" data-modal-close aria-label="Close">&times;</button>
     </div>
-    <p class="modal-sub">Property types now adapt Client Work Hub to web, piano, salon and other service businesses.</p>
+    <p class="modal-sub"><?= cm_home()
+        ? 'The Windows home edition: Client Work Hub on one PC, for one person, with nothing to host.'
+        : 'A Windows home edition joins the web edition, built from the same release.' ?></p>
     <ul class="release-list">
-      <li><b>Property types.</b> Choose Digital/web asset, Piano, Salon, General or one of your own property templates.</li>
+      <?php if (cm_home()): ?>
+      <li><b>Runs on this PC.</b> Its own database and server start with the window and stop when it closes; your data stays in your Windows profile, and uninstalling leaves it there.</li>
+      <li><b>Check for updates.</b> Settings, Update asks GitHub only when you press it, checks the release&rsquo;s signature, runs the database updates, and keeps the version before so you can go back.</li>
+      <li><b>Nothing reaches out.</b> No client portal or links, no email, no online payments and no work screens: invoices and summaries are PDFs you save.</li>
+      <li><b>Reset my password</b> in the Start menu, for the day you forget it.</li>
+      <?php else: ?>
+      <li><b>A Windows home edition.</b> The same release, installed on one Windows PC with its own PHP and database, for people who do not want hosting. Your web install is unchanged.</li>
+      <?php endif; ?>
+      <li class="muted"><b>Earlier releases:</b></li>
+      <li><b>Property types.</b> Choose Digital/web asset, <?= cm_home() ? '' : 'Piano, ' ?>Salon, General or one of your own property templates.</li>
       <li><b>Custom property templates.</b> Build reusable service records with up to 12 text, long-text, date or number fields.</li>
-      <li><b>Confirmed signatures.</b> Signature-required client forms also require the signer to type their full name; both are stored with the signing time.</li>
-      <li><b>Piano service records.</b> Keep make, model, serial, room, Damp-Chaser, condition and tuning details together.</li>
-      <li><b>Mobile-service context.</b> Service address, suburb and access notes are available for Piano and General properties.</li>
+      <?php if (!cm_home()): ?><li><b>Confirmed signatures.</b> Signature-required client forms also require the signer to type their full name; both are stored with the signing time.</li><?php endif; ?>
+      <?php if (!cm_home()): ?><li><b>Piano service records.</b> Keep make, model, serial, room, Damp-Chaser, condition and tuning details together.</li><?php endif; ?>
+      <li><b>Mobile-service context.</b> Service address, suburb and access notes are available for <?= cm_home() ? 'Salon' : 'Piano' ?> and General properties.</li>
       <li><b>Your default.</b> Settings can preselect the property type your business uses most.</li>
-      <li><b>Privacy-safe Work Access.</b> Create staff or public-display screens with an explicit allow-list; first name is optional and off by default.</li>
-      <li><b>Customisable screens.</b> Choose Today, Do next or Just done; show business, client, job and estimate; set a maximum; and optionally highlight VIPs.</li>
+      <?php if (!cm_home()): ?><li><b>Privacy-safe Work Access.</b> Create staff or public-display screens with an explicit allow-list; first name is optional and off by default.</li>
+      <li><b>Customisable screens.</b> Choose Today, Do next or Just done; show business, client, job and estimate; set a maximum; and optionally highlight VIPs.</li><?php endif; ?>
       <li><b>Cash Register.</b> Record walk-in sales, calculate cash change, print numbered receipts and issue append-only partial or full refunds.</li>
       <li><b>Invoice-to-job context.</b> Linked invoices on a client file now open a quick job-details window with dates, progress, status and description.</li>
       <li><b>Shorter, clearer guidance.</b> Reminders, Reports, Settings and task-edit help now state the useful fact directly, while Services folds secondary actions under More.</li>
@@ -354,7 +365,8 @@ function cm_admin_nav(string $current = ''): void
         'register'  => ['label' => 'Cash register', 'href' => 'admin/register.php', 'group' => 'Today',
                         'hidden' => (string) cm_setting('register.visibility', 'show') === 'hide'],
         'reminders' => ['label' => 'Reminders', 'href' => 'admin/reminders.php', 'group' => 'Today'],
-        'bookings'  => ['label' => 'Bookings',  'href' => 'admin/bookings.php',  'group' => 'Today'],
+        'bookings'  => ['label' => 'Bookings',  'href' => 'admin/bookings.php',  'group' => 'Today',
+                        'hidden' => cm_home()],
         'clients'   => ['label' => 'Clients',   'href' => 'admin/clients.php',   'group' => 'Your clients'],
         'jobs'      => ['label' => 'Jobs',      'href' => 'admin/jobs.php',      'group' => 'Your clients'],
 
@@ -373,14 +385,17 @@ function cm_admin_nav(string $current = ''): void
 
 
 
-        'mail'      => ['label' => 'Messages',  'href' => 'admin/mail.php',      'group' => 'Your clients'],
+        'mail'      => ['label' => 'Messages',  'href' => 'admin/mail.php',      'group' => 'Your clients',
+                        'hidden' => cm_home()],
         'reports'   => ['label' => 'Reports',   'href' => 'admin/reports.php',   'group' => 'Your clients'],
         'services'  => ['label' => 'Services',  'href' => 'admin/services.php', 'group' => 'Set up'],
-        'onboarding'=> ['label' => 'Onboarding','href' => 'admin/onboarding.php','group' => 'Set up'],
+        'onboarding'=> ['label' => 'Onboarding','href' => 'admin/onboarding.php','group' => 'Set up',
+                        'hidden' => cm_home()],
 
 
 
-        'messages'  => ['label' => 'Email templates', 'href' => 'admin/email-templates.php', 'group' => 'Set up'],
+        'messages'  => ['label' => 'Email templates', 'href' => 'admin/email-templates.php', 'group' => 'Set up',
+                        'hidden' => cm_home()],
         'settings'  => ['label' => 'Settings',  'href' => 'admin/settings.php',  'group' => 'Set up'],
     ];
 
@@ -549,13 +564,15 @@ function cm_admin_subnav(string $area, string $current = '', string $title = '')
             'general'  => ['label' => 'Settings', 'href' => 'admin/settings.php', 'badge' => null],
             'billing'  => ['label' => 'Invoicing', 'href' => 'admin/billing-settings.php', 'badge' => null],
 
-            'smart'    => ['label' => 'Smart reminders', 'href' => 'admin/smart-reminders.php', 'badge' => null],
+            'smart'    => ['label' => 'Smart reminders', 'href' => 'admin/smart-reminders.php', 'badge' => null,
+                           'hidden' => cm_home()],
 
 
 
 
 
-            'work_access' => ['label' => 'Work screens', 'href' => 'admin/work-access.php', 'badge' => null],
+            'work_access' => ['label' => 'Work screens', 'href' => 'admin/work-access.php', 'badge' => null,
+                              'hidden' => cm_home()],
             'property_templates' => ['label' => 'Property templates', 'href' => 'admin/property-templates.php', 'badge' => null],
             'audit'    => ['label' => 'Audit log', 'href' => 'admin/audit.php',   'badge' => null],
             'update'   => ['label' => 'Update',   'href' => 'admin/update.php',   'badge' => 'update'],
@@ -593,6 +610,7 @@ function cm_admin_subnav(string $area, string $current = '', string $title = '')
     if ($title !== '') echo '<h1>' . e($title) . '</h1>';
     echo '<nav class="subnav" aria-label="' . e(ucfirst($area)) . ' sections">';
     foreach ($areas[$area] as $key => $t) {
+        if (!empty($t['hidden'])) continue;
         $n   = (int) ($counts[$t['badge'] ?? ''] ?? 0);
         $cls = 'subnav-item' . ($key === $current ? ' is-on' : '');
         $cur = $key === $current ? ' aria-current="page"' : '';
