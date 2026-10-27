@@ -294,9 +294,17 @@ function cm_foot(): void
       <button class="modal-x" type="button" data-modal-close aria-label="Close">&times;</button>
     </div>
     <p class="modal-sub"><?= cm_home()
-        ? 'The Windows home edition: Client Work Hub on one PC, for one person, with nothing to host.'
-        : 'A Windows home edition joins the web edition, built from the same release.' ?></p>
+        ? 'A security release: a patched PHP, and a tighter lock on who can reach this copy.'
+        : 'A security release. Nothing you use changes.' ?></p>
     <ul class="release-list">
+      <?php if (cm_home()): ?>
+      <li><b>PHP 8.5.12.</b> The home download now carries PHP 8.5.12, which fixes two critical faults in PHP itself. Updating from Settings, Update replaces the application but not PHP: download clientworkhub-home-0.3.21.zip from GitHub and run Install Client Work Hub.cmd again. Your data is kept. Settings, Update warns until you do.</li>
+      <li><b>This PC&rsquo;s own address only.</b> A web page that reaches this copy under any other name is refused, which closes a way for a page in your browser to talk to it.</li>
+      <li><b>Tighter PHP settings.</b> The bundled PHP cannot run other programs or open web addresses as files, and hidden files stay hidden however their address is spelled.</li>
+      <?php else: ?>
+      <li><b>PHP that still gets fixes.</b> Settings, Update now warns when your hosting&rsquo;s PHP no longer gets security fixes from the PHP project (8.1 since the end of 2025, 8.2 from the end of 2026). Moving to PHP 8.3 or newer is a setting at your host.</li>
+      <?php endif; ?>
+      <li class="muted"><b>Earlier releases:</b></li>
       <?php if (cm_home()): ?>
       <li><b>Runs on this PC.</b> Its own database and server start with the window and stop when it closes; your data stays in your Windows profile, and uninstalling leaves it there.</li>
       <li><b>Check for updates.</b> Settings, Update asks GitHub only when you press it, checks the release&rsquo;s signature, runs the database updates, and keeps the version before so you can go back.</li>
@@ -305,7 +313,6 @@ function cm_foot(): void
       <?php else: ?>
       <li><b>A Windows home edition.</b> The same release, installed on one Windows PC with its own PHP and database, for people who do not want hosting. Your web install is unchanged.</li>
       <?php endif; ?>
-      <li class="muted"><b>Earlier releases:</b></li>
       <li><b>Property types.</b> Choose Digital/web asset, <?= cm_home() ? '' : 'Piano, ' ?>Salon, General or one of your own property templates.</li>
       <li><b>Custom property templates.</b> Build reusable service records with up to 12 text, long-text, date or number fields.</li>
       <?php if (!cm_home()): ?><li><b>Confirmed signatures.</b> Signature-required client forms also require the signer to type their full name; both are stored with the signing time.</li><?php endif; ?>

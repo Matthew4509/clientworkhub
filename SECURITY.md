@@ -192,7 +192,15 @@ not a claim.
 
 **The Windows home edition** (0.3.20, `'edition' => 'home'`): it answers only
 on 127.0.0.1 (the launcher binds there, and the application refuses any other
-peer); everything that reaches a client or the internet answers 404 on the
+peer) and, from 0.3.21, only to a `Host` of `127.0.0.1`, `localhost` or `[::1]`,
+so a web page whose name has been re-pointed at this PC (DNS rebinding) is
+refused; its router matches the decoded path, so an encoded or trailing-dot
+spelling of a hidden file is hidden too. Its `php.ini` disables running other
+programs and opening URLs as files. An in-app update replaces the application,
+never the bundled PHP and MariaDB: a release with a newer runtime is installed
+by running the new home download's installer again (data is kept), and the
+health check warns while the PHP is older than `CM_HOME_MIN_PHP`. Everything
+that reaches a client or the internet answers 404 on the
 server, and email is refused rather than spooled. Its **Check for updates**
 asks the GitHub Releases API only when pressed, follows redirects only on
 GitHub's own hosts, and treats the download exactly as an upload: checksums,

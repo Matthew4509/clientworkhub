@@ -49,6 +49,24 @@ const CM_REQ_MIN_PHP = '8.1.0';
 
 
 
+const CM_HOME_MIN_PHP = '8.5.12';
+
+
+
+
+
+
+
+function cm_req_php_security_end_year(): ?int
+{
+    $ends = ['8.1' => 2025, '8.2' => 2026, '8.3' => 2027, '8.4' => 2028, '8.5' => 2029];
+    return $ends[PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION] ?? null;
+}
+
+
+
+
+
 
 
 

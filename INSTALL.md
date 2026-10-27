@@ -125,8 +125,12 @@ It runs only while its window is open and answers only on that PC. Your data
 is in `%APPDATA%\Client Work Hub`; uninstalling leaves it there, and
 installing again carries on from it. Forgotten your password? Start menu →
 Client Work Hub → **Reset my password**. Updates: Settings → Update →
-**Check for updates**. Back up from the same screen: the file goes to your
-Downloads folder, so copy it to a USB stick or a cloud folder.
+**Check for updates**. That replaces the application but not the PHP and
+MariaDB beside it; when a release carries a newer PHP (0.3.21 does), download
+the new home zip and run **Install Client Work Hub.cmd** again, which keeps
+your data. Settings → Update warns while your PHP is older than the newest
+download's. Back up from the same screen: the file goes to your Downloads
+folder, so copy it to a USB stick or a cloud folder.
 
 The home edition has no client portal, no email, no online payments, no work
 screens and no Piano property type: everything that would reach a client or

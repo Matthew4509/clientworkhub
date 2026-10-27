@@ -230,13 +230,21 @@ function cm_health_checks(bool $probe = false): array
     $checks = [];
 
 
+
     $phpOk = cm_req_php_ok();
+    $phpEnd = cm_req_php_security_end_year();
+    $phpEol = $phpEnd !== null && (int) date('Y') > $phpEnd;
+    $homeOld = cm_home() && version_compare(PHP_VERSION, CM_HOME_MIN_PHP, '<');
     $checks[] = [
         'label' => 'PHP version',
-        'state' => $phpOk ? 'ok' : 'fail',
+        'state' => !$phpOk ? 'fail' : (($phpEol || $homeOld) ? 'warn' : 'ok'),
         'detail' => 'Running PHP ' . PHP_VERSION
-                  . ($phpOk ? '.' : ' — this application needs ' . CM_REQ_MIN_PHP . ' or newer.'),
-        'fix'   => 'cPanel → MultiPHP Manager, set this domain to a newer PHP.',
+                  . (!$phpOk ? ' — this application needs ' . CM_REQ_MIN_PHP . ' or newer.'
+                    : ($homeOld ? ' — this copy\'s PHP is older than the one in the newest home download (' . CM_HOME_MIN_PHP . '), and has known security faults.'
+                    : ($phpEol ? ' — PHP stopped shipping security fixes for ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . ' at the end of ' . $phpEnd . '.' : '.'))),
+        'fix'   => cm_home()
+                   ? 'Download the newest clientworkhub-home zip from GitHub and run Install Client Work Hub.cmd again. Updating from this screen does not replace PHP; the installer does, and your data is kept.'
+                   : 'cPanel → MultiPHP Manager, set this domain to PHP 8.3 or newer.',
     ];
 
 

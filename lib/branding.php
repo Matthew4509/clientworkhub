@@ -449,7 +449,7 @@ function cm_logo_reencode(string $path, int $type): void
         } else {
             @imagejpeg($img, $path, 88);
         }
-        @imagedestroy($img);
+        unset($img);
     } catch (Throwable $ex) {
 
     }

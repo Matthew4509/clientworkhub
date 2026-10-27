@@ -81,7 +81,12 @@ define('CM_LIB', __DIR__);
 
 
 
-const CM_VERSION = '0.3.20';
+
+
+
+
+
+const CM_VERSION = '0.3.21';
 
 
 
@@ -443,6 +448,15 @@ require_once CM_LIB . '/headers.php';
 if (cm_home() && PHP_SAPI !== 'cli') {
     $cmPeer = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
     if (!($cmPeer === '::1' || str_starts_with($cmPeer, '127.'))) {
+        http_response_code(403);
+        header('Content-Type: text/plain; charset=utf-8');
+        cm_send_security_headers();
+        exit("Client Work Hub (home edition) only answers on this PC.\n");
+    }
+
+
+
+    if (!in_array(cm_host(), ['127.0.0.1', 'localhost', '[::1]'], true)) {
         http_response_code(403);
         header('Content-Type: text/plain; charset=utf-8');
         cm_send_security_headers();
