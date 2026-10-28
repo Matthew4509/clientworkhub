@@ -216,10 +216,13 @@ Update, top to bottom:
    To put one back, Admin → Settings → Update → **Restore a backup**. A file
    too big for your host's upload limit goes in `storage/restore/` by FTP or
    File Manager and appears in the list there.
-2. **Get the release** — download the newest `clientworkhub-x.y.z.zip`
-   from the Releases page at <https://github.com/Matthew4509/clientworkhub/releases>
-   and upload it with **Upload a release**, exactly as it downloaded. The
-   site never checks for updates on its own. The release is verified
+2. **Get the release** — press **Check for updates** (from 0.3.22): the site
+   asks GitHub Releases for the newest version and offers to download it.
+   It asks only when you press the button. If your host blocks outgoing
+   connections, download the newest `clientworkhub-x.y.z.zip` from
+   <https://github.com/Matthew4509/clientworkhub/releases> instead and
+   install it with **Or install a release zip you already have**, exactly
+   as it downloaded. Either way the release is verified
    file-by-file before anything is touched, and where PHP has the `sodium`
    extension it must also carry Client Work Hub's signature — a tampered
    file is refused. Without sodium the screen says the signature could not

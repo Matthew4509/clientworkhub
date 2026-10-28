@@ -86,7 +86,10 @@ define('CM_LIB', __DIR__);
 
 
 
-const CM_VERSION = '0.3.21';
+
+
+
+const CM_VERSION = '0.3.22';
 
 
 

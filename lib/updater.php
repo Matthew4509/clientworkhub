@@ -47,6 +47,7 @@
 
 
 
+
 declare(strict_types=1);
 if (!defined('CM_ROOT')) { http_response_code(404); exit; }
 
@@ -927,7 +928,10 @@ function cm_update_github_host_ok(string $url): bool
 function cm_update_github_get(string $url, int $maxBytes, ?callable $sink = null): array
 {
     $fail = static fn(string $why): array => ['ok' => false, 'error' => $why, 'body' => ''];
-    if (!function_exists('curl_init')) return $fail('PHP\'s curl extension is not loaded.');
+    if (!function_exists('curl_init')) {
+        return $fail('PHP\'s curl extension is not loaded, so GitHub cannot be asked from here. '
+                   . 'Download the zip from the releases page and use "Or install a release zip you already have".');
+    }
     for ($hop = 0; $hop < 6; $hop++) {
         if (!cm_update_github_host_ok($url)) {
             return $fail('The download was sent somewhere other than GitHub, so it was stopped.');
@@ -962,7 +966,10 @@ function cm_update_github_get(string $url, int $maxBytes, ?callable $sink = null
         $err = curl_error($ch);
         if ($tooBig) return $fail('GitHub sent far more than any release. Stopped.');
         if (in_array($code, [301, 302, 303, 307, 308], true) && $next !== '') { $url = $next; continue; }
-        if ($ok === false) return $fail('GitHub could not be reached: ' . ($err !== '' ? $err : 'no answer') . '.');
+        if ($ok === false) {
+            return $fail('GitHub could not be reached: ' . ($err !== '' ? $err : 'no answer') . '. '
+                       . 'Some hosts block outgoing connections; the zip from the releases page can be installed instead.');
+        }
         if ($code === 403 || $code === 429) {
             return $fail('GitHub is limiting how often it can be asked. Try again in an hour.');
         }

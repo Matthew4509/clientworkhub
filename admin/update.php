@@ -179,20 +179,20 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
 
 
-    if (cm_home() && (string) ($_POST['action'] ?? '') === 'up_github_check') {
+    if ((string) ($_POST['action'] ?? '') === 'up_github_check') {
         $chk = cm_update_github_check(CM_VERSION);
         $_SESSION['cm_update_github'] = $chk + ['at' => time()];
         if (!$chk['ok']) cm_flash($chk['error'], 'error');
         cm_redirect_recovery('admin/update.php#files');
     }
 
-    if (cm_home() && (string) ($_POST['action'] ?? '') === 'up_github_download') {
+    if ((string) ($_POST['action'] ?? '') === 'up_github_download') {
 
         $chk = cm_update_github_check(CM_VERSION);
         $_SESSION['cm_update_github'] = $chk + ['at' => time()];
         if (!$chk['ok']) { cm_flash($chk['error'], 'error'); cm_redirect_recovery('admin/update.php#files'); }
         if (empty($chk['newer'])) {
-            cm_flash('The newest release on GitHub is ' . $chk['version'] . ', and this copy already runs '
+            cm_flash('The newest release on GitHub is ' . $chk['version'] . ', and this ' . (cm_home() ? 'copy' : 'site') . ' already runs '
                    . CM_VERSION . ' — nothing to fetch.', 'warn');
             cm_redirect_recovery('admin/update.php#files');
         }
@@ -1111,10 +1111,9 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
     computer &mdash; either way it is checked file-by-file before anything is
     touched,
     <?php else: ?>
-    A newer release is downloaded from
-    <a href="<?= e(CM_RELEASES_URL) ?>" target="_blank" rel="noopener noreferrer">the releases page on GitHub</a>
-    and uploaded here &mdash; it is checked file-by-file before anything is
-    touched,
+    A newer release comes from GitHub when you ask for it (or as a zip you
+    upload from your computer) &mdash; either way it is checked file-by-file
+    before anything is touched,
     <?php endif; ?> and your own files
     (<span class="mono">config.php</span>, <span class="mono">storage/</span>,
     anything you added) are never written or removed.
@@ -1210,13 +1209,15 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
       </form>
     <?php endif; ?>
 
-  <?php elseif (cm_home()): ?>
+  <?php elseif (cm_home() || !cm_update_online_on()): ?>
     <?php 
-          $ghSeen = $_SESSION['cm_update_github'] ?? null; ?>
+
+          $ghSeen = $_SESSION['cm_update_github'] ?? null;
+          $ghThis = cm_home() ? 'this copy' : 'this site'; ?>
     <?php if (is_array($ghSeen) && !empty($ghSeen['ok']) && !empty($ghSeen['newer'])): ?>
       <div class="note note-info">
         <b>Version <span class="mono"><?= e((string) $ghSeen['version']) ?></span> is available</b>
-        (this copy runs <span class="mono"><?= e(CM_VERSION) ?></span>).
+        (<?= $ghThis ?> runs <span class="mono"><?= e(CM_VERSION) ?></span>).
         <?php if (trim((string) $ghSeen['title']) !== ''): ?><span class="d-block mt-6"><b><?= e((string) $ghSeen['title']) ?></b></span><?php endif; ?>
         <?php if (trim((string) $ghSeen['notes']) !== ''): ?>
           <span class="d-block mt-6 small prewrap"><?= e((string) $ghSeen['notes']) ?></span>
@@ -1237,7 +1238,7 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
       <?php if (is_array($ghSeen) && !empty($ghSeen['ok'])): ?>
         <p class="note note-ok mb-12">
           <b>Up to date.</b> The newest release on GitHub is
-          <span class="mono"><?= e((string) $ghSeen['version']) ?></span> and this copy runs
+          <span class="mono"><?= e((string) $ghSeen['version']) ?></span> and <?= $ghThis ?> runs
           <span class="mono"><?= e(CM_VERSION) ?></span>.
         </p>
       <?php endif; ?>
@@ -1258,6 +1259,10 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
       <p class="muted small">
         The <span class="mono">clientworkhub-x.y.z.zip</span> from the releases page, exactly as it
         downloaded &mdash; not unpacked, not renamed. It is verified the same way.
+        <?php $cap = (string) ini_get('upload_max_filesize');
+              if (!cm_home() && $cap !== '' && $cap !== '-1'): ?>
+          Your host accepts uploads up to <span class="mono"><?= e($cap) ?></span>.
+        <?php endif; ?>
       </p>
       <form method="post" enctype="multipart/form-data" data-saving>
         <?= cm_csrf_field() ?><?= cm_recovery_field() ?>
@@ -1300,32 +1305,7 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
       <?php endif; ?>
     <?php endif; ?>
 
-    <?php if (!cm_update_online_on()): ?>
-    <div>
-      <h3>Upload a release</h3>
-      <p class="muted small">
-        Download the newest <span class="mono">clientworkhub-x.y.z.zip</span> from
-        <a href="<?= e(CM_RELEASES_URL) ?>" target="_blank" rel="noopener noreferrer">the releases page on GitHub</a>
-        and upload it here exactly as it downloaded &mdash; not unpacked, not
-        renamed. It is verified before anything is touched, and refused unless
-        it carries Client Work Hub&rsquo;s release signature.
-        <?php $cap = (string) ini_get('upload_max_filesize');
-              if ($cap !== '' && $cap !== '-1'): ?>
-          Your host accepts uploads up to <span class="mono"><?= e($cap) ?></span>.
-        <?php endif; ?>
-      </p>
-      <form method="post" enctype="multipart/form-data" data-saving>
-        <?= cm_csrf_field() ?><?= cm_recovery_field() ?>
-        <input type="hidden" name="action" value="up_upload">
-        <input type="file" name="release" accept=".zip,application/zip" required<?= cm_upload_limit_attrs() ?>>
-        <button class="btn mt-8" type="submit">Upload it</button>
-      </form>
-      <p class="hint">
-        This site does not check for updates on its own: nothing is fetched from
-        the internet unless you download it yourself.
-      </p>
-    </div>
-    <?php elseif (!is_array($feedSeen) || empty($feedSeen['ok']) || empty($feedSeen['newer'])): ?>
+    <?php if (!is_array($feedSeen) || empty($feedSeen['ok']) || empty($feedSeen['newer'])): ?>
     <div class="split-2">
       <div>
         <h3>Check online</h3>

@@ -185,8 +185,13 @@ not a claim.
   upload on its checksums alone; and `'update.allow_unsigned_upload' =>
   true` in `config.php` turns the check off for someone running their own
   build. **The site never checks for updates on its own** (from 0.3.19):
-  the online channel is off, and nothing is fetched unless `config.php`
-  names a feed (`'update.feed'`). A feed, if one is configured, must carry
+  the old feed channel is off unless `config.php` names a feed
+  (`'update.feed'`). From 0.3.22 an admin can press **Check for updates**,
+  which makes one GET to GitHub's API for the latest release of
+  `Matthew4509/clientworkhub` (the address is fixed in code; redirects are
+  followed only while they stay on GitHub's hosts) and downloads the
+  `clientworkhub-x.y.z.zip` it names into the update folder, where it goes
+  through exactly the checks an upload does. A feed, if one is configured, must carry
   releases signed with the same key, and the version inside the signed zip
   must be the version the feed named.
 
