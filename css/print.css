@@ -8,7 +8,7 @@
   --doc-paper:  #FFFFFF;
   --doc-bg:     #EEF1F5;
 
-  --fs-micro: 10.5px;
+  --fs-micro: 12px;
   --fs-tag:   12px;
   --fs-small: 13px;
   --fs-ui:    14px;
@@ -139,16 +139,16 @@ body.doc {
 .doc-pdf:hover { background: #1a3a9c; }
 @media print { .doc-pdf { display: none; } }
 
-.doc-pay { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; max-width: 820px; margin: 0 auto 14px; padding: 12px 16px;
+.doc-paybar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; max-width: 760px; margin: 0 auto 14px; padding: 12px 16px;
            background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 10px; }
 .doc-pay-l { font-weight: 600; }
 .doc-pay-btn { display: inline-block; font-weight: 700; text-decoration: none; border: 1px solid #1E40AF; background: #1E40AF; color: #fff;
                border-radius: 8px; padding: 8px 14px; }
 .doc-pay-btn:hover { background: #1a3a9c; }
-.doc-banner { max-width: 820px; margin: 0 auto 14px; padding: 12px 16px; border-radius: 10px; border: 1px solid; }
-.doc-banner-ok { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
-.doc-banner-warn { background: #fffbeb; border-color: #fde68a; color: #92400e; }
-@media print { .doc-pay, .doc-banner { display: none; } }
+.doc-notice { max-width: 760px; margin: 0 auto 14px; padding: 12px 16px; border-radius: 10px; border: 1px solid; }
+.doc-notice-ok { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+.doc-notice-warn { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+@media print { .doc-paybar, .doc-notice { display: none; } }
 
 .pdf-note { margin: 6px 0 0; font-size: 0.85rem; color: #8a4b00; }
 @media print { .pdf-note { display: none; } }

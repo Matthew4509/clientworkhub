@@ -496,7 +496,7 @@ a.cred-val { color: var(--accent-ink); }
   border-radius: 50%; background: #fff; transition: left .15s ease;
 }
 .switch-btn.is-on { color: var(--warn-ink); }
-.site-head .switch-btn.is-on { color: #F5B95C; }
+.site-head .switch-btn.is-on { color: var(--head-warn, var(--warn-ink)); }
 .switch-btn.is-on .switch-track { background: var(--warn); }
 .switch-btn.is-on .switch-knob { left: 18px; }
 @media (max-width: 900px) { .switch-btn .switch-text { display: none; } }
@@ -805,7 +805,7 @@ legend { font-size: var(--fs-small); font-weight: 700; padding: 0 6px; color: va
 .subnav.subnav-sm { margin: 0; border-bottom: 0; gap: 12px; }
 .subnav.subnav-sm a.subnav-item { padding: 4px 0; font-size: var(--fs-small); }
 
-.subnav a.subnav-item.subnav-vip { color: var(--vip); }
+.subnav a.subnav-item.subnav-vip { color: var(--vip-deep); }
 .subnav a.subnav-item.subnav-vip:hover { color: var(--vip-deep); }
 .subnav a.subnav-item.subnav-vip.is-on { color: var(--vip); border-bottom-color: var(--vip); }
 .subnav a.subnav-item.subnav-vip.is-on .subnav-n {
@@ -1800,7 +1800,7 @@ dialog.modal::backdrop { background: rgba(18, 26, 36, .45); }
 .step-n {
   display: inline-flex; align-items: center; justify-content: center;
   width: 1.55rem; height: 1.55rem; flex: none; border-radius: 50%;
-  background: var(--accent-tint); color: var(--accent);
+  background: var(--accent-tint); color: var(--accent-ink);
   font-size: var(--fs-small); font-weight: 700;
 }
 .f-derived {
@@ -2053,7 +2053,7 @@ details.why > p { margin-top: 6px; }
 }
 .crumbs a { color: var(--ink); text-decoration: none; }
 .crumbs a:hover { color: var(--accent-ink); text-decoration: underline; }
-.crumbs-sep { color: var(--faint); font-weight: 400; }
+.crumbs-sep { color: var(--muted); font-weight: 400; }
 .crumbs-now { color: var(--ink); }
 
 .click-tile { position: relative; }
@@ -2339,7 +2339,7 @@ html:has(body.pub-body) { overflow-x: clip; }
 .pub-section:first-of-type { border-top: none; }
 .pub-kicker {
   font-size: var(--fs-tag); font-weight: 700; letter-spacing: .09em;
-  text-transform: uppercase; color: var(--faint); margin-bottom: 8px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
 }
 .pub-h2 {
   font-size: clamp(24px, 3.2vw, 32px); line-height: 1.15;
@@ -2463,7 +2463,7 @@ a.pub-way:hover .pub-way-v { color: var(--accent-ink); }
 .ws-facts > div { display: flex; flex-direction: column; gap: 2px; }
 .ws-k {
   font-size: var(--fs-tag); font-weight: 700; letter-spacing: .08em;
-  text-transform: uppercase; color: var(--faint);
+  text-transform: uppercase; color: var(--muted);
 }
 .ws-v { font-size: var(--fs-ui); font-weight: 600; color: var(--ink); }
 
@@ -2509,7 +2509,7 @@ a.pub-way:hover .pub-way-v { color: var(--accent-ink); }
 .captcha-field .lbl { font-weight: 500; color: var(--muted); }
 .captcha-field .lbl b { color: var(--ink); font-weight: 700; }
 
-.pub-main { max-width: 1000px; margin: 0 auto; padding: 44px 20px 72px; }
+.pub-main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 44px 20px 72px; }
 
 .pub-main h1 { font-size: clamp(30px, 4.5vw, 42px); line-height: 1.15; letter-spacing: -.02em; }
 
@@ -3269,7 +3269,7 @@ form .row > .lbl, form .field > span.lbl {
 .auth-card { max-width: 420px; margin: 40px auto; }
 .receipt { max-width: 640px; margin: 0 auto; }
 .receipt-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
-.receipt-head h2 { font-family: var(--mono); margin: 2px 0 0; }
+.receipt-head h2 { margin: 0; }
 .receipt hr { border: 0; border-top: 1px solid var(--border); margin: 14px 0; }
 @media (max-width: 480px) { .receipt-head { flex-direction: column; } .receipt-head .text-right { text-align: left; } }
 
@@ -3319,6 +3319,7 @@ html[data-theme="default"] {
   --head-bg:         #1E3350;
   --head-ink:        #FFFFFF;
   --head-link:       #C3D0E0;
+  --head-warn:       #F5B95C;
   --head-link-hover: #FFFFFF;
   --head-border:     #16273E;
   --head-field-bg:     rgba(255,255,255,.10);
@@ -3330,7 +3331,7 @@ html[data-theme="default"] {
   --rail-ink:       #AEBDD0;
   --rail-ink-hover: #FFFFFF;
   --rail-ink-on:    #FFFFFF;
-  --rail-group:     #8394AC;
+  --rail-group:     #94A4BA;
   --rail-soon:      #71829A;
   --rail-hover-bg:  rgba(255,255,255,.07);
   --rail-on-bg:     rgba(255,255,255,.12);

@@ -79,6 +79,13 @@ function cm_public_head(string $title, string $description = ''): void
 
     cm_send_security_headers();
 
+
+
+
+    if ((isset($_GET['k']) || isset($_GET['t'])) && !headers_sent()) {
+        header('Cache-Control: no-store, private');
+    }
+
     $base = cm_base_url();
     $v = '?v=' . rawurlencode(cm_asset_stamp());
     $biz = cm_public_business_name();

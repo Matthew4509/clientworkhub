@@ -184,7 +184,12 @@ not a claim.
   cannot check signatures at all, and says so on screen when it accepts an
   upload on its checksums alone; and `'update.allow_unsigned_upload' =>
   true` in `config.php` turns the check off for someone running their own
-  build. **The site never checks for updates on its own** (from 0.3.19):
+  build. Neither exception applies to a release fetched by **Check for
+  updates**: a downloaded release is refused unless its signature verifies
+  (from 0.3.23). A release **older** than the one running is refused too,
+  since an old release is still genuinely signed; `'update.allow_downgrade'
+  => true` in `config.php` allows it for someone who means to go back.
+  **The site never checks for updates on its own** (from 0.3.19):
   the old feed channel is off unless `config.php` names a feed
   (`'update.feed'`). From 0.3.22 an admin can press **Check for updates**,
   which makes one GET to GitHub's API for the latest release of

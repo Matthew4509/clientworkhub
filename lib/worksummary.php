@@ -320,8 +320,15 @@ function cm_work_summary_reply(array $row, string $text): string
     }
 
     try {
-        cm_q('UPDATE work_summary SET feedback = ?, replied_at = ? WHERE id = ?',
-             [$merged, cm_now(), (int) $row['id']]);
+
+
+
+        cm_q("UPDATE work_summary
+                 SET feedback = CASE WHEN feedback IS NULL OR TRIM(feedback) = '' THEN ?
+                                     ELSE CONCAT(feedback, '\n\n', ?) END,
+                     replied_at = ?
+               WHERE id = ?",
+             [$stamped, $stamped, cm_now(), (int) $row['id']]);
     } catch (Throwable $ex) {
         error_log('work summary reply failed: ' . $ex->getMessage());
         return 'That could not be saved just now. Try once more, and if it keeps failing please reply by email instead.';

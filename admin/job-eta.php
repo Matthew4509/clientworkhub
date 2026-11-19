@@ -46,7 +46,7 @@ $daysIn  = trim((string) ($_GET['days'] ?? ''));
 $perIn   = trim((string) ($_GET['perday'] ?? ''));
 $tplId   = (int) ($_GET['template'] ?? 0);
 
-if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $start)) $start = date('Y-m-d');
+if (!cm_real_date($start)) $start = date('Y-m-d');
 
 
 

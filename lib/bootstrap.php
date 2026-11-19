@@ -89,7 +89,14 @@ define('CM_LIB', __DIR__);
 
 
 
-const CM_VERSION = '0.3.22';
+
+
+
+
+
+
+
+const CM_VERSION = '0.3.23';
 
 
 
@@ -333,6 +340,19 @@ function e(?string $s): string
 function cm_now(): string
 {
     return (new DateTimeImmutable('now'))->format('Y-m-d H:i:s');
+}
+
+
+
+
+
+
+
+
+function cm_real_date(string $ymd): bool
+{
+    return preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $ymd, $m) === 1
+        && checkdate((int) $m[2], (int) $m[3], (int) $m[1]);
 }
 
 function cm_redirect(string $path): never

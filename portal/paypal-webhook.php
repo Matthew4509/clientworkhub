@@ -41,7 +41,14 @@ foreach ($_SERVER as $key => $value) {
 
 cm_webhook_precheck('paypal', cm_paypal_headers_look_right($headers));
 $payload = cm_webhook_body();
-if (!cm_paypal_webhook_verify($headers, $payload)) {
+$verified = cm_paypal_webhook_verify($headers, $payload);
+if ($verified === null) {
+
+
+    http_response_code(503);
+    exit("Could not be checked just now.\n");
+}
+if (!$verified) {
     cm_webhook_refused('paypal', 'a webhook arrived that PayPal did not verify');
     http_response_code(400);
     exit("Signature did not verify.\n");

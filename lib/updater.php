@@ -110,18 +110,47 @@ function cm_update_safe_rel(string $rel): bool
     if (str_contains($rel, "\0"))                        return false;
     if (str_contains($rel, '\\'))                        return false;
     if ($rel[0] === '/' || preg_match('/^[A-Za-z]:/', $rel)) return false;
+
+
+
+    if (str_contains($rel, ':'))                         return false;
     foreach (explode('/', $rel) as $part) {
         if ($part === '' || $part === '.' || $part === '..') return false;
+        if (str_ends_with($part, '.') || str_ends_with($part, ' ')) return false;
     }
     return true;
 }
 
+
+
 function cm_update_is_protected(string $rel): bool
 {
+    $rel = strtolower($rel);
     foreach (cm_update_protected() as $p) {
+        $p = strtolower($p);
         if ($rel === $p || str_starts_with($rel, $p . '/')) return true;
     }
     return false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+function cm_update_downgrade_problem(string $version): string
+{
+    if (!defined('CM_VERSION') || !version_compare($version, CM_VERSION, '<')) return '';
+    if (function_exists('cm_config') && cm_config('update.allow_downgrade', false) === true) return '';
+    return 'That is release ' . $version . ', which is older than the ' . CM_VERSION
+         . ' this site runs, so it was refused and nothing was changed. An older release brings back '
+         . 'the faults fixed since.';
 }
 
 
@@ -304,12 +333,21 @@ function cm_update_inspect(string $zipPath): array
 
 
 
-function cm_update_upload_signature(string $zipPath, ?string $pubB64 = null): array
+function cm_update_upload_signature(string $zipPath, ?string $pubB64 = null, bool $strict = false): array
 {
 
 
 
-    if (function_exists('cm_config') && cm_config('update.allow_unsigned_upload', false) === true) {
+    if ($strict && !function_exists('sodium_crypto_sign_verify_detached')) {
+        return ['ok' => false, 'note' => '',
+                'error' => 'This server\'s PHP has no sodium, so a downloaded release cannot be checked and was '
+                         . 'refused. Nothing was changed. Download the zip from ' . CM_RELEASES_URL
+                         . ' yourself and upload it instead.'];
+    }
+
+
+
+    if (!$strict && function_exists('cm_config') && cm_config('update.allow_unsigned_upload', false) === true) {
         return ['ok' => true, 'error' => '', 'note' => 'Its signature was not checked: config.php allows unsigned uploads.'];
     }
     if (!function_exists('sodium_crypto_sign_verify_detached')) {
@@ -1036,7 +1074,7 @@ function cm_update_github_download(array $chk, ?string $pubB64 = null): array
     if (!$r['ok']) { @unlink($dest); return $fail($r['error']); }
     $ins = cm_update_inspect($dest);
     if (!$ins['ok']) { cm_update_clear(); return $fail($ins['error']); }
-    $sig = cm_update_upload_signature($dest, $pubB64);
+    $sig = cm_update_upload_signature($dest, $pubB64, true);
     if (!$sig['ok']) { cm_update_clear(); return $fail($sig['error']); }
     if ($ins['version'] !== (string) $chk['version']) {
         cm_update_clear();

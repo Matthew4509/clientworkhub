@@ -393,7 +393,7 @@ function cm_insight_heatmap_html(array $map, string $noun = 'clients'): string
 
 function cm_insight_today(?string $day = null): array
 {
-    $day = $day !== null && preg_match('/^\d{4}-\d{2}-\d{2}$/', $day) ? $day : date('Y-m-d');
+    $day = $day !== null && cm_real_date($day) ? $day : date('Y-m-d');
 
     $rows = [];
     try {

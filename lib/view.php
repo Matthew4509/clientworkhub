@@ -288,21 +288,27 @@ function cm_foot(): void
   <div class="modal-box release-notes">
     <div class="modal-head">
       <div>
-        <p class="eyebrow">Release <?= e(cm_app_label()) ?></p>
-        <h2>What&rsquo;s new</h2>
+        <h2>What&rsquo;s new in version <?= e(cm_app_version()) ?></h2>
       </div>
       <button class="modal-x" type="button" data-modal-close aria-label="Close">&times;</button>
     </div>
-    <p class="modal-sub"><?= cm_home()
-        ? 'A small release for web installs. Nothing on this PC changes.'
-        : 'Updates in one click: this site can now ask GitHub for the newest release.' ?></p>
+    <p class="modal-sub">Fixes from an audit of the whole application. Nothing you use moves.</p>
     <ul class="release-list">
+      <li><b>Printed invoices.</b> The bank transfer details and the DRAFT and VOID marks print again. They had gone missing from paper and from a PDF made by printing.</li>
+      <li><b>Invoices and payments.</b> A line cannot be added to an invoice once it is issued. A date that does not exist, such as 31 February, is refused with a message wherever a date is typed. Very large amounts are refused instead of failing.</li>
+      <?php if (!cm_home()): ?>
+      <li><b>The client&rsquo;s own page on a phone.</b> It fits the screen now; it was cut off at the right edge.</li>
+      <li><b>Kept email.</b> The record of sent email no longer holds working link keys or sign-in codes. Email already recorded is not changed.</li>
+      <?php endif; ?>
+      <li><b>Updates.</b> A release older than the one running is refused, and a release fetched by Check for updates must carry a valid signature.</li>
+      <li><b>Restore.</b> A backup file is read more strictly before anything is put back.</li>
+      <li><b>Two-step sign-in.</b> Turning it on or off signs out every remembered device, and changing your password cancels reset links asked for earlier.</li>
+      <li class="muted"><b>Earlier releases:</b></li>
       <?php if (cm_home()): ?>
       <li><b>Check for updates on the web too.</b> Web installs now get the same Check for updates button this copy already has.</li>
       <?php else: ?>
       <li><b>Check for updates.</b> Settings, Update asks GitHub for the newest release when you press it, checks its signature and every file, and waits for your backup before applying it. Nothing is fetched on its own. If your host blocks outgoing connections, upload the zip as before.</li>
       <?php endif; ?>
-      <li class="muted"><b>Earlier releases:</b></li>
       <?php if (cm_home()): ?>
       <li><b>PHP 8.5.12.</b> The home download carries PHP 8.5.12, which fixes two critical faults in PHP itself. Updating from Settings, Update replaces the application but not PHP: download the newest home zip from GitHub and run Install Client Work Hub.cmd again. Your data is kept. Settings, Update warns until you do.</li>
       <li><b>This PC&rsquo;s own address only.</b> A web page that reaches this copy under any other name is refused, which closes a way for a page in your browser to talk to it.</li>
@@ -992,8 +998,8 @@ function cm_schema_gate(string $feature, string $navTab = ''): void
     <div class="page-hero">
       <div class="card-head align-baseline">
         <div>
-          <span class="eyebrow">Database update required</span>
           <h1 class="mb-0"><?= e($label) ?> is not switched on yet</h1>
+          <p class="muted mb-0">It needs a database update first.</p>
         </div>
       </div>
     </div>

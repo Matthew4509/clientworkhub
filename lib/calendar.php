@@ -56,7 +56,9 @@ function cm_calendar_html(string $name, string $selected, string $id): string
 
 
 
-    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $selected) || strtotime($selected) === false) {
+
+
+    if (!cm_real_date($selected)) {
         $selected = date('Y-m-d');
     }
 

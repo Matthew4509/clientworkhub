@@ -61,6 +61,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         cm_q('UPDATE account SET password_hash = ? WHERE id = ?',
              [cm_password_hash($new), (int) $user['id']]);
         cm_remember_revoke_all((int) $user['id']);
+
+        cm_q('UPDATE auth_token SET used_at = ? WHERE account_id = ? AND used_at IS NULL',
+             [cm_now(), (int) $user['id']]);
         cm_credential_mark_refresh((int) $user['id']);
         cm_audit('password.changed', 'account', (int) $user['id'], 'password changed from the account screen');
         cm_flash('Password changed. Every other browser and remembered device has been signed out.');

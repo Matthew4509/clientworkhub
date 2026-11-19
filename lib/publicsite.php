@@ -668,7 +668,7 @@ function cm_public_spam_check(string $scope): string
     if (trim((string) ($_POST['company_website'] ?? '')) !== '') {
         return 'refused';
     }
-    $who = cm_client_ip() . '|' . $scope;
+    $who = cm_client_ip_bucket() . '|' . $scope;
     if (cm_rate_exceeded('public_' . $scope, $who, 8, 60)) {
         return 'That is a lot of requests in an hour. Try again shortly, or email us directly.';
     }

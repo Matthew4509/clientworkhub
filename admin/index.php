@@ -27,7 +27,7 @@ $admin = cm_require_admin();
 
 $today = date('Y-m-d');
 $day = (string) ($_GET['day'] ?? $today);
-if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $day) || strtotime($day) === false) $day = $today;
+if (!cm_real_date($day) || strtotime($day) === false) $day = $today;
 
 cm_queue_handle_post($admin, 'admin/' . ($day !== $today ? '?day=' . $day : ''));
 

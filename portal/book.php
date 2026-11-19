@@ -121,7 +121,9 @@ if ($kind === 'booking') {
     if ($service === null) cm_public_404('That service is not available.');
 
     $from = trim((string) ($_POST['requested_from'] ?? ''));
-    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $from) || $from < date('Y-m-d')) $from = null;
+
+
+    if (!cm_real_date($from) || $from < date('Y-m-d') || $from > date('Y-m-d', strtotime('+2 years'))) $from = null;
     $quote = cm_public_quote($service, $from);
 }
 

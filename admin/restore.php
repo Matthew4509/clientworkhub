@@ -117,8 +117,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 $error = (string) ($kind['error'] ?? 'That file is not a Client Work Hub backup.') . ' Nothing was kept.';
             } elseif ($kind['kind'] !== 'sealed' && !($seen = cm_restore_inspect($tmp))['ok']) {
                 $error = (string) $seen['error'] . ' Nothing was kept.';
-            } elseif (!@move_uploaded_file($tmp, $dir . '/' . ($name = $kind['kind'] === 'gzip' && !preg_match('/\.sql\.gz$/i', $name)
-                        ? preg_replace('/\.gz$/i', '', $name) . '.sql.gz' : $name))) {
+            } elseif (!@move_uploaded_file($tmp, $dir . '/' . ($name = cm_restore_stored_name($name, (string) $kind['kind'])))) {
                 $error = 'The file could not be saved into ' . $where . '. Check the folder is writable, '
                        . 'or put the file there yourself with ' . ($home ? 'File Explorer' : 'File Manager') . '.';
             } else {

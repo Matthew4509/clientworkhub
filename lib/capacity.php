@@ -205,7 +205,7 @@ function cm_day_free_minutes(string $date): ?int
 function cm_capacity_plan(int $perDayMinutes, int $days, ?string $from = null): array
 {
     $days = max(1, min(365, $days));
-    $from = $from !== null && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)
+    $from = $from !== null && cm_real_date($from)
           ? $from : date('Y-m-d');
 
 
@@ -294,7 +294,7 @@ function cm_capacity_accepts(int $perDayMinutes, int $days, ?string $from = null
 
 function cm_capacity_outlook(int $days = 21, ?string $from = null): array
 {
-    $d = $from !== null && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from) ? $from : date('Y-m-d');
+    $d = $from !== null && cm_real_date($from) ? $from : date('Y-m-d');
     $out = [];
     for ($i = 0; $i < max(1, min(90, $days)); $i++) {
         $working = cm_is_workday($d);

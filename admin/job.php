@@ -71,7 +71,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         if (!isset(cm_job_priorities()[$prio])) $prio = 'normal';
         if (!isset(cm_billing_frequencies()[$bfreq])) $bfreq = 'oneoff';
         foreach (['start' => $start, 'end' => $end] as $k => $d) {
-            if ($d !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $d)) $errors[$k . '_date'] = 'Use the date picker.';
+            if ($d !== '' && !cm_real_date($d)) $errors[$k . '_date'] = 'Use the date picker.';
         }
         if ($start !== '' && $end !== '' && $end < $start) {
             $errors['end_date'] = 'The end date is before the start date.';
@@ -251,10 +251,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
         if ($aname === '' || mb_strlen($aname) > 160) $errors['a_name'] = 'Name the task — "Publish Facebook post".';
         if (!isset(cm_action_frequencies()[$freq])) $freq = 'oneoff';
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $start)) {
+        if (!cm_real_date($start)) {
             $errors['a_start'] = 'A start date is what the schedule is built from.';
         }
-        if ($end !== '' && (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $end) || $end < $start)) {
+        if ($end !== '' && (!cm_real_date($end) || $end < $start)) {
             $errors['a_end'] = 'The end date is before the start.';
         }
         if ($freq !== 'oneoff' && $end === '' && (string) $job['end_date'] !== '' && $job['end_date'] !== null) {

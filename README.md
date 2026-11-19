@@ -20,7 +20,7 @@ install (`install.php`), one-click database updates (Admin → Settings →
 Update), streamed database backups, and a health screen that answers every
 question a person with a shell would ask.
 
-**Current version: 0.3.20.** `FEATURES.md` is what it does, `SECURITY.md` is
+**Current version: 0.3.23.** `FEATURES.md` is what it does, `SECURITY.md` is
 how it is defended and what is deliberately left open, `INSTALL.md` and
 `SETUP.md` are how to put it on a server and switch it on.
 

@@ -59,7 +59,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $mode  = (string) ($_POST['completion_mode'] ?? 'last_day') === 'own_day' ? 'own_day' : 'last_day';
 
         $bad = '';
-        if ($name === '' || mb_strlen($name) > 160) $bad = 'Give the template a name — "Facebook weekly management".';
+        if ($name === '' || mb_strlen($name) > 160) $bad = 'Give the service a name — "Facebook weekly management".';
         $cents = 0;
         if ($amt !== '') {
             if (!preg_match('/^\d+(\.\d{1,2})?$/', $amt)) $bad = 'The price: a plain amount, like 250 or 199.50.';

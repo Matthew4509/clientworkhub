@@ -1120,7 +1120,7 @@ function cm_occurrence_edit_apply(array $occ, string $actor, int $clientId): arr
                      [$jobId, $to]) !== null;
     };
 
-    if ($moves && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
+    if ($moves && !cm_real_date($to)) {
         $failed = 'Pick the day it moves to.';
     } elseif ($moves && $clash($actionId, (int) $occ['job_id'], $to)) {
         $failed = 'That day already has this task — complete or move that one instead.';
@@ -1686,7 +1686,7 @@ function cm_job_create(array $in, string $actor): array
     if (mb_strlen($name) > 160) $name = mb_substr($name, 0, 160);
 
     foreach (['start' => $start, 'end' => $end] as $label => $d) {
-        if ($d !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $d)) {
+        if ($d !== '' && !cm_real_date($d)) {
             return $refuse('Use the date picker for the ' . $label . ' date.');
         }
     }

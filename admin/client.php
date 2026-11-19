@@ -269,7 +269,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             cm_flash('That job is not on this client\'s record.', 'error');
             cm_redirect('admin/client.php?id=' . $id . '&tab=jobs');
         }
-        if ($title === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $due) || strtotime($due) === false) {
+        if ($title === '' || !cm_real_date($due) || strtotime($due) === false) {
             cm_flash('Give the reminder a title and a real date.', 'error');
             cm_redirect('admin/client.php?id=' . $id . '&tab=jobs');
         }
@@ -630,19 +630,19 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $errors['m_subject'] = 'Say what it was about, briefly.';
             $tab = 'comms';
         } else {
-            $at = preg_match('/^\d{4}-\d{2}-\d{2}$/', $when)
+            $at = cm_real_date($when)
                 ? $when . ' ' . date('H:i:s') : cm_now();
             cm_insert('INSERT INTO communication (client_id, contact, kind, subject, notes,
                                                   happened_at, follow_up, created_at)
                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                       [$id, mb_substr($contact, 0, 160), $kind, $subject, $notes, $at,
-                       preg_match('/^\d{4}-\d{2}-\d{2}$/', $follow) ? $follow : null, cm_now()]);
+                       cm_real_date($follow) ? $follow : null, cm_now()]);
             cm_client_touch($id);
             cm_audit('client.contacted', 'client', $id,
                      cm_communication_kinds()[$kind] . ': ' . mb_substr($subject, 0, 80));
 
             $said = 'Logged.';
-            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $follow)) {
+            if (cm_real_date($follow)) {
 
 
                 cm_reminder_create('Follow up: ' . $subject, $follow, 'none', 'normal', $id);

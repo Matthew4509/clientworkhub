@@ -41,14 +41,16 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $qty  = trim((string) ($_POST['qty'] ?? '1'));
         if ($desc === '') {
             cm_flash('The line needs a description.', 'error');
-        } elseif (!preg_match('/^\d+(\.\d{1,2})?$/', $amt)) {
+        } elseif (!preg_match('/^\d{1,8}(\.\d{1,2})?$/', $amt)) {
             cm_flash('The amount: a plain number, like 250 or 199.50.', 'error');
-        } elseif (!preg_match('/^\d+(\.\d{1,2})?$/', $qty) || (float) $qty <= 0) {
+        } elseif (!preg_match('/^\d{1,8}(\.\d{1,2})?$/', $qty) || (float) $qty <= 0) {
             cm_flash('The quantity: a number greater than nothing.', 'error');
         } else {
-            cm_invoice_add_item($id, $desc, (float) $qty, (int) round((float) $amt * 100),
-                                !empty($_POST['taxable']));
-            cm_flash('Line added.');
+            $added = cm_invoice_add_item($id, $desc, (float) $qty, (int) round((float) $amt * 100),
+                                         !empty($_POST['taxable']));
+            cm_flash($added > 0 ? 'Line added.'
+                                : 'That line was not added: the invoice is no longer a draft, or the numbers are too large.',
+                     $added > 0 ? 'ok' : 'error');
         }
         cm_redirect('admin/invoice.php?id=' . $id);
     }
@@ -83,7 +85,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $amt = trim((string) ($_POST['amount'] ?? ''));
         if (!cm_once_spend()) {
             cm_flash('That payment form was already sent, so nothing more was recorded. Check the payments below.', 'warn');
-        } elseif (!preg_match('/^\d+(\.\d{1,2})?$/', $amt)) {
+        } elseif (!preg_match('/^\d{1,8}(\.\d{1,2})?$/', $amt)) {
             cm_flash('The amount: a plain number, like 250 or 199.50.', 'error');
         } else {
             $problem = cm_invoice_add_payment(
@@ -103,7 +105,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $amt = trim((string) ($_POST['amount'] ?? ''));
         if (!cm_once_spend()) {
             cm_flash('That refund form was already sent, so nothing more was recorded. Check the payments below.', 'warn');
-        } elseif (!preg_match('/^\d+(\.\d{1,2})?$/', $amt)) {
+        } elseif (!preg_match('/^\d{1,8}(\.\d{1,2})?$/', $amt)) {
             cm_flash('The amount: a plain number, like 250 or 199.50.', 'error');
         } else {
             $problem = cm_invoice_add_refund(

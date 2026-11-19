@@ -158,7 +158,8 @@ function cm_invoice_document(array $invoice, ?string $draftName = null): void
   <?php endif; ?>
 
   <footer class="doc-foot">
-    <?php $pay = $isDraft ? '' : (string) $invoice['pay_details']; ?>
+    <?php 
+          $pay = ($isDraft || (string) $invoice['status'] === 'void') ? '' : (string) $invoice['pay_details']; ?>
     <?php if ($pay !== '' && !$isPaid): ?>
       <p class="doc-pay"><b>Pay by transfer</b><br><?= e($pay) ?></p>
     <?php endif; ?>

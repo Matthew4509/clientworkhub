@@ -267,6 +267,27 @@ function cm_mail_spool(string $to, string $subject, string $headers, string $bod
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+function cm_mail_log_redact(string $body, string $kind = ''): string
+{
+
+    if ($kind === 'tfa_code') $body = (string) preg_replace('/\b\d{6}\b/', '(removed)', $body);
+    return (string) preg_replace_callback('~https?://[^\s<>"\']+~i', static function (array $m): string {
+        if (stripos($m[0], 'unsubscribe.php') !== false) return $m[0];
+        return (string) preg_replace('/([?&](?:k|t|key|token)=)[A-Za-z0-9_\-]{16,}/', '$1(removed)', $m[0]);
+    }, $body);
+}
+
 function cm_mail_record(string $to, string $subject, string $kind, string $result,
                         int $clientId = 0, ?string $body = null): void
 {
@@ -275,7 +296,7 @@ function cm_mail_record(string $to, string $subject, string $kind, string $resul
                    VALUES (?, ?, ?, ?, ?, ?, ?)',
                   [$clientId > 0 ? $clientId : null,
                    mb_substr($to, 0, 190), mb_substr($subject, 0, 190),
-                   $body === null ? null : $body,
+                   $body === null ? null : cm_mail_log_redact($body, $kind),
                    mb_substr($kind, 0, 40), mb_substr($result, 0, 190), cm_now()]);
     } catch (Throwable $ex) {
         error_log('mail_log write failed: ' . $ex->getMessage());

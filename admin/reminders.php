@@ -31,7 +31,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
         if ($title === '') {
             cm_flash('Say what to be reminded of.', 'error');
-        } elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $due)) {
+        } elseif (!cm_real_date($due)) {
             cm_flash('Pick the day.', 'error');
         } else {
             cm_reminder_create($title, $due, $repeat, $prio,

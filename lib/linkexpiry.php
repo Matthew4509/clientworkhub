@@ -63,7 +63,9 @@ function cm_link_expiry_days($raw, bool $allowNever = false): ?int
 {
     $v = is_string($raw) || is_int($raw) ? trim((string) $raw) : '';
     if ($allowNever && ($v === '' || $v === '0' || strtolower($v) === 'never')) return null;
-    $n = (int) $v;
+
+
+    $n = ctype_digit($v) ? (int) $v : 0;
     return isset(cm_link_expiry_choices()[$n]) ? $n : CM_LINK_EXPIRY_DEFAULT_DAYS;
 }
 

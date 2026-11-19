@@ -441,6 +441,70 @@ function cm_restore_statements(array $r): Generator
 
 
 
+function cm_restore_stored_name(string $name, string $kind): string
+{
+    $want = ['sql' => '.sql', 'gzip' => '.sql.gz', 'sealed' => CM_SEAL_EXT][$kind] ?? '';
+    if ($want === '' || str_ends_with(strtolower($name), strtolower($want))) return $name;
+    $stem = (string) preg_replace('/(\.sql\.gz|\.sql|\.gz|' . preg_quote(CM_SEAL_EXT, '/') . ')$/i', '', $name);
+    return ($stem === '' ? 'backup' : $stem) . $want;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function cm_restore_sql_bare(string $sql): ?string
+{
+    $out = '';
+    $n   = strlen($sql);
+    $i   = 0;
+    while ($i < $n) {
+        $run = strcspn($sql, "'`\"", $i);
+        if ($run > 0) { $out .= substr($sql, $i, $run); $i += $run; }
+        if ($i >= $n) break;
+        $c = $sql[$i];
+        if ($c === '"') return null;
+        if ($c === '`') {
+            $end = strpos($sql, '`', $i + 1);
+            if ($end === false) return null;
+            $id = substr($sql, $i + 1, $end - $i - 1);
+            if (!preg_match('/^[A-Za-z0-9_]{1,64}$/', $id)) return null;
+            $out .= '`' . $id . '`';
+            $i = $end + 1;
+            continue;
+        }
+
+        $i++;
+        while (true) {
+            $i += strcspn($sql, "'\\", $i);
+            if ($i >= $n) return null;
+            if ($sql[$i] === '\\') { $i += 2; continue; }
+            if ($i + 1 < $n && $sql[$i + 1] === "'") { $i += 2; continue; }
+            $i++;
+            break;
+        }
+        $out .= "''";
+    }
+    return $out;
+}
+
+
+
+
+
+
+
 
 
 
@@ -456,8 +520,13 @@ function cm_restore_statement_problem(string $sql, array &$made, array &$dropped
         $dropped[$m[1]] = true;
         return '';
     }
-    $bare = preg_replace("/'(?:[^'\\\\]++|\\\\.)*+'/s", "''", $sql);
-    if (!is_string($bare)) return 'could not be read as SQL';
+    $bare = cm_restore_sql_bare($sql);
+    if ($bare === null) return 'could not be read as SQL';
+
+
+
+
+    if (preg_match('/--|#|\/\*/', $bare)) return 'carries a comment a backup never writes';
     if (substr_count($bare, ';') > (str_ends_with($bare, ';') ? 1 : 0)) {
         return 'holds more than one statement';
     }
@@ -466,6 +535,18 @@ function cm_restore_statement_problem(string $sql, array &$made, array &$dropped
         $ddl = (string) preg_replace('/`[^`]*`/', '``', $bare);
         if (preg_match('/\b(SELECT|DEFINER|CONNECTION|DIRECTORY|TRIGGER|PROCEDURE|FUNCTION|EVENT)\b|\/\*|#/i', $ddl)) {
             return 'creates a table with options a backup never uses';
+        }
+
+
+        if (preg_match('/\bENGINE\s*=?\s*[\'`]/i', $bare)) {
+            return 'creates a table with a storage engine a backup never uses';
+        }
+        if (preg_match_all('/\bENGINE\s*=?\s*(\w+)/i', $ddl, $eng)) {
+            foreach ($eng[1] as $engine) {
+                if (!in_array(strtolower($engine), ['innodb', 'myisam', 'aria'], true)) {
+                    return 'creates a table with a storage engine a backup never uses';
+                }
+            }
         }
         $made[$m[1]] = true;
         return '';

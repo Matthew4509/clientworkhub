@@ -661,12 +661,13 @@ function cm_paypal_order_record(array $order): string
 
 
 
-function cm_paypal_webhook_verify(array $headers, string $payload): bool
+
+function cm_paypal_webhook_verify(array $headers, string $payload): ?bool
 {
     $webhookId = trim((string) cm_setting('paypal.webhook_id', ''));
     if ($webhookId === '') return false;
     $tok = cm_paypal_token();
-    if (isset($tok['error'])) return false;
+    if (isset($tok['error'])) return null;
     $h = static fn(string $k): string => (string) ($headers[$k] ?? $headers[strtolower($k)] ?? '');
     $body = json_encode([
         'auth_algo'         => $h('PAYPAL-AUTH-ALGO'),
@@ -680,7 +681,8 @@ function cm_paypal_webhook_verify(array $headers, string $payload): bool
     $r = cm_pay_http('POST', cm_paypal_api() . '/v1/notifications/verify-webhook-signature',
                      ['Authorization: Bearer ' . $tok['token'], 'Content-Type: application/json'], $body);
     $j = json_decode($r['body'], true);
-    return $r['status'] === 200 && is_array($j) && (string) ($j['verification_status'] ?? '') === 'SUCCESS';
+    if ($r['status'] === 0 || $r['status'] >= 500 || !is_array($j)) return null;
+    return $r['status'] === 200 && (string) ($j['verification_status'] ?? '') === 'SUCCESS';
 }
 
 

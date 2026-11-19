@@ -87,10 +87,14 @@ function cm_job_payment_add(int $jobId, int $clientId, int $amountCents, string 
                             string $paidOn, string $reference, string $note, string $actor): string
 {
     if ($amountCents <= 0)                      return 'The amount: a plain number, like 250 or 199.50.';
+    if ($amountCents > CM_INVOICE_MAX_CENTS)    return 'That amount is larger than a payment can be.';
     if (!isset(cm_payment_methods()[$method]))  $method = 'other';
     $platform = mb_substr(trim($platform), 0, 80);
     if ($method === 'platform' && $platform === '') return 'Which platform paid you? Name it.';
-    $when = preg_match('/^\d{4}-\d{2}-\d{2}$/', $paidOn) ? $paidOn : date('Y-m-d');
+
+
+    $when = trim($paidOn) === '' ? date('Y-m-d') : trim($paidOn);
+    if (!cm_real_date($when)) return 'The date is not a real day. Use the date picker.';
     try {
         cm_insert('INSERT INTO job_payment (job_id, client_id, amount_cents, method, platform, paid_on,
                                             reference, note, recorded_by, created_at)
@@ -262,6 +266,13 @@ function cm_invoice_tax(array $invoice): array
 
 
 
+
+
+const CM_INVOICE_MAX_CENTS = 1000000000;
+
+const CM_INVOICE_MAX_QTY   = 999999.99;
+
+
 function cm_invoice_create(int $clientId, ?int $jobId = null, ?int $bookingId = null): int
 {
     return cm_insert(
@@ -277,20 +288,50 @@ function cm_invoice_create(int $clientId, ?int $jobId = null, ?int $bookingId = 
 
 
 
+
+
+
 function cm_invoice_add_item(int $invoiceId, string $description, float $qty,
                              int $unitCents, bool $taxable = true, ?int $templateId = null): int
 {
-    $qty  = max(0.0, $qty);
-    $line = (int) round($qty * $unitCents);
-    $sort = (int) cm_val('SELECT COALESCE(MAX(sort), 0) + 10 FROM invoice_item WHERE invoice_id = ?',
-                         [$invoiceId]);
-    $id = cm_insert(
-        'INSERT INTO invoice_item (invoice_id, description, qty, unit_cents, line_cents, taxable, template_id, sort)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [$invoiceId, mb_substr(trim($description), 0, 400), $qty, $unitCents, $line,
-         $taxable ? 1 : 0, $templateId ?: null, $sort]
-    );
-    cm_invoice_recalculate($invoiceId);
+
+
+    if (!is_finite($qty)) return 0;
+    $qty = max(0.0, $qty);
+    if ($qty > CM_INVOICE_MAX_QTY || abs($unitCents) > CM_INVOICE_MAX_CENTS) return 0;
+    $lineF = round($qty * $unitCents);
+    if (abs($lineF) > CM_INVOICE_MAX_CENTS) return 0;
+    $line = (int) $lineF;
+
+
+
+
+
+    $db  = cm_db();
+    $own = !$db->inTransaction();
+    if ($own) $db->beginTransaction();
+    try {
+        $status = cm_val('SELECT status FROM invoice WHERE id = ? FOR UPDATE', [$invoiceId]);
+        $sum    = (int) cm_val('SELECT COALESCE(SUM(line_cents), 0) FROM invoice_item WHERE invoice_id = ?',
+                               [$invoiceId]);
+        if ((string) $status !== 'draft' || abs($sum + $line) > CM_INVOICE_MAX_CENTS) {
+            if ($own) $db->rollBack();
+            return 0;
+        }
+        $sort = (int) cm_val('SELECT COALESCE(MAX(sort), 0) + 10 FROM invoice_item WHERE invoice_id = ?',
+                             [$invoiceId]);
+        $id = cm_insert(
+            'INSERT INTO invoice_item (invoice_id, description, qty, unit_cents, line_cents, taxable, template_id, sort)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [$invoiceId, mb_substr(trim($description), 0, 400), $qty, $unitCents, $line,
+             $taxable ? 1 : 0, $templateId ?: null, $sort]
+        );
+        cm_invoice_recalculate($invoiceId);
+        if ($own) $db->commit();
+    } catch (Throwable $ex) {
+        if ($own && $db->inTransaction()) $db->rollBack();
+        throw $ex;
+    }
     return $id;
 }
 
@@ -366,7 +407,9 @@ function cm_invoice_recalculate(int $invoiceId): void
 
 function cm_invoice_next_number(): string
 {
-    $prefix = trim((string) cm_setting('invoice.number_prefix', 'INV')) ?: 'INV';
+
+
+    $prefix = rtrim(trim((string) cm_setting('invoice.number_prefix', 'INV')), "- ") ?: 'INV';
     $year   = date('Y');
     $like   = $prefix . '-' . $year . '-%';
 
@@ -504,9 +547,13 @@ function cm_invoice_add_payment(int $invoiceId, int $amountCents, string $method
     if ((string) $invoice['status'] === 'draft')  return 'Issue the invoice before recording a payment against it.';
     if ((string) $invoice['status'] === 'void')   return 'That invoice is void.';
     if ($amountCents === 0)                       return 'A payment of nothing is not a payment.';
+    if (abs($amountCents) > CM_INVOICE_MAX_CENTS) return 'That amount is larger than a payment can be.';
     if (!isset(cm_payment_methods()[$method]))    $method = 'other';
 
-    $when = preg_match('/^\d{4}-\d{2}-\d{2}$/', $paidOn) ? $paidOn : date('Y-m-d');
+
+
+    $when = trim($paidOn) === '' ? date('Y-m-d') : trim($paidOn);
+    if (!cm_real_date($when)) return 'The date is not a real day. Use the date picker.';
 
 
 
@@ -598,7 +645,10 @@ function cm_invoice_add_refund(int $invoiceId, int $amountCents, string $method,
     if ($amountCents <= 0) return 'The amount: a plain number, like 250 or 199.50.';
     if ($reason === '')    return 'Say why the money went back (for example "refunded by bank transfer" or "recorded twice").';
     if (!isset(cm_payment_methods()[$method])) $method = 'other';
-    $when = preg_match('/^\d{4}-\d{2}-\d{2}$/', $paidOn) ? $paidOn : date('Y-m-d');
+
+
+    $when = trim($paidOn) === '' ? date('Y-m-d') : trim($paidOn);
+    if (!cm_real_date($when)) return 'The date is not a real day. Use the date picker.';
 
     $db = cm_db();
     $own = !$db->inTransaction();

@@ -52,6 +52,8 @@ $base   = cm_base_url();
 $v      = '?v=' . rawurlencode(cm_asset_stamp());
 
 cm_send_security_headers();
+
+header('Cache-Control: no-store, private');
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
@@ -92,15 +94,15 @@ cm_send_security_headers();
       }
 ?>
 <?php if (isset($_GET['paid'])): ?>
-  <p class="doc-banner doc-banner-ok">Thank you &mdash; your payment has been received<?= $isPaid ? ', and this invoice is paid in full' : '' ?>.</p>
+  <p class="doc-notice doc-notice-ok">Thank you &mdash; your payment has been received<?= $isPaid ? ', and this invoice is paid in full' : '' ?>.</p>
 <?php elseif (isset($_GET['unsettled'])): ?>
-  <p class="doc-banner doc-banner-warn">We could not confirm that payment just now. If your card or PayPal account was
+  <p class="doc-notice doc-notice-warn">We could not confirm that payment just now. If your card or PayPal account was
   charged, it will show here once the provider confirms it &mdash; nothing to do on your side. If it was not, you can try again below.</p>
 <?php elseif (isset($_GET['cancelled'])): ?>
-  <p class="doc-banner doc-banner-warn">The payment was cancelled before it went through. Nothing has been charged.</p>
+  <p class="doc-notice doc-notice-warn">The payment was cancelled before it went through. Nothing has been charged.</p>
 <?php endif; ?>
 <?php if ($payLinks): ?>
-  <div class="doc-pay">
+  <div class="doc-paybar">
     <span class="doc-pay-l">Pay this invoice online:</span>
     <?php foreach ($payLinks as $pl): ?>
       <a class="doc-pay-btn" href="<?= e($pl['url']) ?>"><?= e($pl['label']) ?></a>

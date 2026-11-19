@@ -193,7 +193,9 @@ function cm_safe_return(?string $raw): string
     $raw = (string) $raw;
     if ($raw === '' || $raw[0] !== '/') return '';
     if (isset($raw[1]) && ($raw[1] === '/' || $raw[1] === '\\')) return '';
-    if (str_contains($raw, "\r") || str_contains($raw, "\n")) return '';
+
+
+    if (preg_match('/[\x00-\x1F\x7F]/', $raw)) return '';
 
 
 

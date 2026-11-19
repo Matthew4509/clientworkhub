@@ -188,7 +188,7 @@ function cm_appointment_create(array $in): array
     };
     $from = $tidyTime((string) ($in['from'] ?? ''));
     $to   = $tidyTime((string) ($in['to'] ?? ''));
-    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)
+    if (!cm_real_date($date)
         || !preg_match('/^\d{1,2}:\d{2}$/', $from) || !preg_match('/^\d{1,2}:\d{2}$/', $to)) {
         return $fail('An appointment needs its day, a start and an end (like 13:00 to 14:00).');
     }

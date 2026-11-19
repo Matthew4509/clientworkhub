@@ -158,6 +158,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             cm_redirect_recovery('admin/update.php#files');
         }
 
+        $older = cm_update_downgrade_problem((string) $ins['version']);
+        if ($older !== '') {
+            cm_update_clear();
+            cm_audit('update.refused', '', null, 'uploaded release ' . $ins['version'] . ' refused: older than ' . CM_VERSION);
+            cm_flash($older, 'error');
+            cm_redirect_recovery('admin/update.php#files');
+        }
+
         $signed = cm_update_upload_signature($rcv['path']);
         if (!$signed['ok']) {
             cm_update_clear();
@@ -309,6 +317,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         if ($ins['ok'] && str_starts_with(basename($zipPath), 'upload-')) {
             $signed = cm_update_upload_signature($zipPath);
             if (!$signed['ok']) $ins = ['ok' => false, 'error' => $signed['error']] + $ins;
+        }
+        if ($ins['ok'] && ($older = cm_update_downgrade_problem((string) $ins['version'])) !== '') {
+            $ins = ['ok' => false, 'error' => $older] + $ins;
         }
         if (!$ins['ok']) {
             cm_update_clear();

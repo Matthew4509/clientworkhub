@@ -20,6 +20,7 @@ require __DIR__ . '/../lib/bootstrap.php';
 require_once CM_LIB . '/view.php';
 require_once CM_LIB . '/password.php';
 require_once CM_LIB . '/tfa.php';
+require_once CM_LIB . '/remember.php';
 
 $user = cm_require_login();
 $user = cm_row('SELECT * FROM account WHERE id = ?', [(int) $user['id']]);
@@ -118,6 +119,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 (int) $user['id'],
             ]);
             cm_tfa_backup_store((int) $user['id'], $codes);
+
+
+            cm_remember_revoke_all((int) $user['id']);
             cm_credential_mark_refresh((int) $user['id']);
             unset($_SESSION['cm_tfa_setup']);
             cm_audit('tfa.enabled', 'account', (int) $user['id'], 'two-step sign-in on, method ' . $setup['method']);
@@ -161,6 +165,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         } else {
             cm_rate_clear($manageBucket, $manageKey);
             cm_tfa_disable((int) $user['id'], (string) $user['email']);
+            cm_remember_revoke_all((int) $user['id']);
             cm_credential_mark_refresh((int) $user['id']);
             cm_flash('Two-step sign-in is off. Your password is now the only thing protecting this account.', 'warn');
             cm_redirect('account/?open=twostep');
