@@ -1142,10 +1142,27 @@ function cm_app_key(): string
     $file = CM_STORAGE . '/appkey.php';
     cm_storage_seal();
 
+
+
+
+
     $new = bin2hex(random_bytes(32));
-    if (@file_put_contents($file, "<?php return '" . $new . "';\n") === false) {
+    $fh  = @fopen($file, 'x');
+    if ($fh === false) {
+
+        for ($try = 0; $try < 20 && is_file($file); $try++) {
+            $have = cm_app_key_source();
+            if ($have['where'] !== 'none') return $key = cm_app_key_from($have['value']);
+            usleep(50000);
+        }
 
 
+        throw new RuntimeException('Cannot create storage/appkey.php — set secret_key in config.php instead.');
+    }
+    $ok = fwrite($fh, "<?php return '" . $new . "';\n") !== false;
+    fclose($fh);
+    if (!$ok) {
+        @unlink($file);
         throw new RuntimeException('Cannot create storage/appkey.php — set secret_key in config.php instead.');
     }
     @chmod($file, 0600);

@@ -941,7 +941,10 @@ const CM_GITHUB_HOSTS = ['api.github.com', 'github.com', 'objects.githubusercont
 function cm_update_github_api(): string
 {
     $u = function_exists('cm_config') ? cm_config('update.github_api', '') : '';
-    return is_string($u) && preg_match('#^https?://[^/\s]+/#', $u) ? $u : CM_GITHUB_LATEST_API;
+
+
+    return is_string($u) && preg_match('#^(https://[^/\s]+/|http://(127\.0\.0\.1|localhost|\[::1\])(:\d+)?/)#i', $u)
+        ? $u : CM_GITHUB_LATEST_API;
 }
 
 function cm_update_github_host_ok(string $url): bool

@@ -82,7 +82,19 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         }
 
 
-        cm_seal_hold(cm_seal_new_key(), !empty($_POST['passwords']));
+        $sealVault = !empty($_POST['passwords']);
+
+
+
+        $sealWas = cm_seal_pending();
+        if ($sealVault && empty($sealWas['passwords'])) {
+            $vaultProblem = cm_backup_vault_problem($admin, (string) ($_POST['vault_pw'] ?? ''));
+            if ($vaultProblem !== '') {
+                cm_flash($vaultProblem, 'error');
+                cm_redirect_recovery('admin/update.php#backup');
+            }
+        }
+        cm_seal_hold(cm_seal_new_key(), $sealVault);
 
         cm_seal_confirm();
         cm_redirect_recovery('admin/update.php?sealkey=1#backup');
@@ -906,6 +918,12 @@ foreach ($cleanup as $c) { if ($c['removable']) { $anyRemovable = true; break; }
       <input type="checkbox" name="passwords" value="1">
       <span>Include my clients&rsquo; stored passwords in the download</span>
     </label>
+    <?php if (empty($admin['recovery'])): ?>
+      <div class="mb-10">
+        <label for="vault-pw">Your password, needed only when the box above is ticked</label>
+        <input type="password" id="vault-pw" name="vault_pw" value="" autocomplete="current-password">
+      </div>
+    <?php endif; ?>
     <p class="hint mt-0">
       Off, and the file carries <b>no client passwords at all</b> &mdash; the saved
       password, the secret note and the recovery code on every login come out

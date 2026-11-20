@@ -531,6 +531,30 @@ function cm_seal_hold(array $phrase, bool $withPasswords = false): void
 }
 
 
+
+
+
+
+
+
+
+
+function cm_backup_vault_problem(array $admin, string $typed): string
+{
+    if (!empty($admin['recovery'])) return '';
+    $row = cm_row('SELECT * FROM account WHERE id = ?', [(int) ($admin['id'] ?? 0)]);
+    if (!$row) return 'Sign in again, then start the backup again.';
+    if (!cm_rate_within('vault-pw', (string) $row['id'], 5, 15)) {
+        return 'Too many wrong passwords. Wait fifteen minutes, then try again.';
+    }
+    if ($typed === '' || !cm_password_verify_account($row, $typed)) {
+        return 'To include your clients\u{2019} stored passwords, type your own password in the box under the tick. '
+             . 'Nothing was downloaded.';
+    }
+    return '';
+}
+
+
 function cm_seal_confirm(): void
 {
     if (isset($_SESSION['cm_seal_hold']) && is_array($_SESSION['cm_seal_hold'])) {

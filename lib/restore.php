@@ -458,6 +458,24 @@ function cm_restore_stored_name(string $name, string $kind): string
 
 
 
+function cm_restore_unguessable(string $name): string
+{
+    $tag = '-u' . bin2hex(random_bytes(8));
+    if (preg_match('/^(.*?)(\.sql\.gz|\.sql|' . preg_quote(CM_SEAL_EXT, '/') . ')$/i', $name, $m)) {
+        return ($m[1] === '' ? 'backup' : $m[1]) . $tag . $m[2];
+    }
+    return $name . $tag;
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -535,6 +553,12 @@ function cm_restore_statement_problem(string $sql, array &$made, array &$dropped
         $ddl = (string) preg_replace('/`[^`]*`/', '``', $bare);
         if (preg_match('/\b(SELECT|DEFINER|CONNECTION|DIRECTORY|TRIGGER|PROCEDURE|FUNCTION|EVENT)\b|\/\*|#/i', $ddl)) {
             return 'creates a table with options a backup never uses';
+        }
+
+
+
+        if (preg_match('/\bDEFAULT\s*\(|\bAS\s*\(|\bGENERATED\b/i', $ddl)) {
+            return 'creates a table with a worked-out column a backup never uses';
         }
 
 

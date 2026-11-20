@@ -672,6 +672,22 @@ function cm_public_spam_check(string $scope): string
     if (cm_rate_exceeded('public_' . $scope, $who, 8, 60)) {
         return 'That is a lot of requests in an hour. Try again shortly, or email us directly.';
     }
+
+
+
+
+
+
+
+    if (cm_rate_exceeded('public_all_' . $scope, 'site', 60, 60)) {
+        return 'This form is very busy right now. Try again in an hour, or email us directly.';
+    }
     cm_rate_record('public_' . $scope, $who);
     return '';
+}
+
+
+function cm_public_accepted(string $scope): void
+{
+    cm_rate_record('public_all_' . $scope, 'site');
 }

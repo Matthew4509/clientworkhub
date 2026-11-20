@@ -292,8 +292,15 @@ function cm_foot(): void
       </div>
       <button class="modal-x" type="button" data-modal-close aria-label="Close">&times;</button>
     </div>
-    <p class="modal-sub">Fixes from an audit of the whole application. Nothing you use moves.</p>
+    <p class="modal-sub">Security fixes from a second review before a stable release. Nothing you use moves.</p>
     <ul class="release-list">
+      <li><b>Backups with your clients&rsquo; passwords.</b> Ticking &ldquo;Include my clients&rsquo; stored passwords&rdquo; now asks for your own password, and the download is recorded before it starts.</li>
+      <li><b>Uploaded backups.</b> A backup uploaded to be restored is kept under a name nobody can guess.</li>
+      <li><b>Passwords.</b> A new password can be up to 72 letters; longer ones were only partly used. Changing your password allows ten wrong tries in fifteen minutes.</li>
+      <?php if (!cm_home()): ?>
+      <li><b>The booking form.</b> What a visitor types can no longer pass for lines of the email you are sent about a booking, and the form takes at most sixty bookings an hour across the whole site.</li>
+      <?php endif; ?>
+      <li class="muted"><b>Earlier releases:</b></li>
       <li><b>Printed invoices.</b> The bank transfer details and the DRAFT and VOID marks print again. They had gone missing from paper and from a PDF made by printing.</li>
       <li><b>Invoices and payments.</b> A line cannot be added to an invoice once it is issued. A date that does not exist, such as 31 February, is refused with a message wherever a date is typed. Very large amounts are refused instead of failing.</li>
       <?php if (!cm_home()): ?>
@@ -303,7 +310,6 @@ function cm_foot(): void
       <li><b>Updates.</b> A release older than the one running is refused, and a release fetched by Check for updates must carry a valid signature.</li>
       <li><b>Restore.</b> A backup file is read more strictly before anything is put back.</li>
       <li><b>Two-step sign-in.</b> Turning it on or off signs out every remembered device, and changing your password cancels reset links asked for earlier.</li>
-      <li class="muted"><b>Earlier releases:</b></li>
       <?php if (cm_home()): ?>
       <li><b>Check for updates on the web too.</b> Web installs now get the same Check for updates button this copy already has.</li>
       <?php else: ?>

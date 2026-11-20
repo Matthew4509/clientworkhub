@@ -49,10 +49,12 @@ function cm_password_problem(string $password, string $email = ''): string
     if ($len < CM_PASSWORD_MIN) {
         return 'Use at least ' . CM_PASSWORD_MIN . ' characters — length matters far more than symbols.';
     }
-    if ($len > 200) {
+    if (strlen($password) > 72) {
 
 
-        return 'That password is too long (200 characters maximum).';
+
+
+        return 'That password is too long (72 letters maximum, fewer with accents or emoji).';
     }
     if (trim($password) === '') {
         return 'A password of only spaces is not a password.';

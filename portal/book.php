@@ -43,10 +43,15 @@ if (cm_post_too_large()) cm_require_csrf();
 
 $kind = (string) ($_POST['kind'] ?? 'enquiry') === 'booking' ? 'booking' : 'enquiry';
 
-$name    = trim((string) ($_POST['name'] ?? ''));
+
+
+
+$oneLine = static fn(string $k, int $max): string
+    => mb_substr(trim((string) preg_replace('/\s+/u', ' ', (string) ($_POST[$k] ?? ''))), 0, $max);
+$name    = $oneLine('name', 160);
 $email   = strtolower(trim((string) ($_POST['email'] ?? '')));
-$phone   = trim((string) ($_POST['phone'] ?? ''));
-$company = trim((string) ($_POST['company'] ?? ''));
+$phone   = $oneLine('phone', 60);
+$company = $oneLine('company', 160);
 $message = trim((string) ($_POST['message'] ?? ''));
 
 
@@ -150,6 +155,8 @@ $ref = cm_booking_create([
     'plan_note'     => $quote !== null ? (string) $quote['note'] : '',
 ]);
 
+cm_public_accepted($kind);
+
 if ($link !== null) {
     cm_link_touch($link);
 }
@@ -184,7 +191,9 @@ if ($to !== '') {
           . "Match:     " . $who['confidence'] . " — " . $who['note'] . "\n"
           . ($quote !== null && $quote['start'] !== ''
               ? "Quoted:    " . $quote['start'] . " to " . $quote['end'] . "\n" : '')
-          . ($message !== '' ? "\n" . $message . "\n" : '')
+
+
+          . ($message !== '' ? "\nTheir message:\n" . preg_replace('/^/m', '  | ', $message) . "\n" : '')
           . "\nOpen it: " . cm_url('admin/bookings.php');
     cm_mail($to, 'New ' . $kind . ' — ' . $what . ' (' . $ref . ')', $body,
             ['kind' => 'booking_alert']);

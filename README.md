@@ -20,7 +20,7 @@ install (`install.php`), one-click database updates (Admin → Settings →
 Update), streamed database backups, and a health screen that answers every
 question a person with a shell would ask.
 
-**Current version: 0.3.23.** `FEATURES.md` is what it does, `SECURITY.md` is
+**Current version: 0.3.24.** `FEATURES.md` is what it does, `SECURITY.md` is
 how it is defended and what is deliberately left open, `INSTALL.md` and
 `SETUP.md` are how to put it on a server and switch it on.
 
@@ -47,36 +47,40 @@ The two are the same code: one setting in `config.php` (`'edition' =>
 'home'`, written only by the Windows home edition when it first starts) turns the web features off on
 the server, not just in the menus.
 
+## Download the right zip
+
+Take **`clientworkhub-x.y.z.zip`** from the
+[Releases page](https://github.com/Matthew4509/clientworkhub/releases), under
+*Assets*. Not the green **Code** button and not the *Source code* zips GitHub
+adds to every release: those wrap everything in an extra folder, and they are
+not the signed package that Admin → Settings → Update checks.
+
+## Deploying to cPanel
+
+1. cPanel → *MySQL® Databases*: create a database and a user, and add
+   the user to it with **ALL PRIVILEGES**.
+2. cPanel → *File Manager*: make a folder such as `public_html/hub`,
+   upload the release zip into it and **Extract**. The files land directly
+   in that folder.
+3. Open `yoursite.com/hub/install.php` **straight away** and fill in one
+   form. It writes `config.php` (with a generated encryption key), builds the
+   database, creates your administrator account and deletes itself.
+4. Turn on two-step sign-in.
+
+**[INSTALL.md](INSTALL.md) is the full guide**: choosing the PHP version in
+MultiPHP Manager, installing beside an existing website, nginx hosts, and
+what to check afterwards.
+
 ## Running it locally
 
 Any PHP 8.1+ with `pdo_mysql`, `openssl` and `mbstring`, and any
 MySQL 5.7+ / MariaDB 10.3+. There is no build step, no composer and no npm.
+XAMPP, Laragon or MAMP work: extract the zip into the web folder and open
+`install.php` (see INSTALL.md).
 
-1. Create an empty database and a user with rights on it.
-2. Serve the folder. PHP's own server is enough, but **route it through
-   `tools/devserver.php`** —
-
-   ```
-   php -S localhost:8080 tools/devserver.php
-   ```
-
-   The built-in server does not read `.htaccess` and never will, so without
-   that router `storage/`, `lib/` and the spooled email under
-   `storage/mail/` are all readable over HTTP locally while being correctly
-   denied on any real host. Developing against the more permissive of the two
-   is how a production-only fault never gets reproduced; the router is a
-   line-by-line mirror of `.htaccess` and `tests/smoke.php` fetches every one
-   of those paths and demands a refusal.
-3. Open it. With no `config.php` you land on the installer.
-
-Run the suites with `php tests/smoke.php --base=http://localhost:8080`.
-Without `--base` the HTTP half is skipped and says so.
-
-## Deploying to cPanel
-
-Upload everything, open `/install.php`, fill in one form. It writes
-`config.php` (with a generated encryption key), builds the database, creates
-your administrator account and deletes itself. Then turn on two-step sign-in.
+PHP's own server (`php -S localhost:8080`) also runs it, but it does not read
+`.htaccess`, so `storage/`, `lib/` and the spooled email are readable over
+HTTP while it runs. Use it on your own machine only, never on a network.
 
 ## The three security rules that must never be broken
 

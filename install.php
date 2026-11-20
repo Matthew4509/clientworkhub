@@ -44,7 +44,7 @@ const CM_INSTALL_COOKIE    = 'cm_install';
 $CM_ROOT_DIR = __DIR__;
 $configFile  = $CM_ROOT_DIR . '/config.php';
 $storageDir  = $CM_ROOT_DIR . '/storage';
-$claimFile   = $storageDir . '/install-claim.json';
+$claimFile   = $storageDir . '/install-claim.php';
 
 
 
@@ -253,7 +253,9 @@ function ins_claim_read(string $file): ?array
 {
     $raw = @file_get_contents($file);
     if ($raw === false) return null;
-    $data = json_decode($raw, true);
+
+
+    $data = json_decode((string) substr($raw, (int) strpos($raw, "\n") + 1), true);
     if (!is_array($data) || empty($data['token']) || empty($data['at'])) return null;
     if (time() - (int) $data['at'] > CM_INSTALL_CLAIM_TTL) return null;
     return $data;
@@ -266,13 +268,15 @@ $mine  = $claim !== null
 
 if ($claim === null) {
     $token = bin2hex(random_bytes(32));
-    @file_put_contents($claimFile, json_encode(['token' => $token, 'at' => time()]), LOCK_EX);
+    @file_put_contents($claimFile, "<?php http_response_code(404); exit; ?>\n"
+                                   . json_encode(['token' => $token, 'at' => time()]), LOCK_EX);
     @chmod($claimFile, 0600);
     setcookie(CM_INSTALL_COOKIE, $token, [
         'expires'  => time() + CM_INSTALL_CLAIM_TTL,
         'path'     => '/',
-        'secure'   => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-                      || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https',
+
+
+        'secure'   => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
         'httponly' => true,
         'samesite' => 'Strict',
     ]);
@@ -287,7 +291,7 @@ if ($claim === null) {
         or wait thirty minutes and reload this page.</p>
         <p><b>If it was not you, act now.</b> Whoever installs this site becomes
         its administrator. In cPanel → File Manager, delete
-        <span class="mono">storage/install-claim.json</span> and reload this
+        <span class="mono">storage/install-claim.php</span> and reload this
         page. Only somebody with File Manager access can do that, so doing it
         always wins.</p>
       </div>
@@ -427,7 +431,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && !$cannot) {
                         : (str_contains($msg, 'command denied')
                             ? 'That user can read the database but not create tables. In cPanel → MySQL Databases → '
                             . 'Add User To Database, tick ALL PRIVILEGES.'
-                            : 'Could not connect: ' . $msg));
+                            : 'Could not connect to the database. Check the host (usually localhost) and the port '
+                            . '(usually 3306), then try again.'));
             }
         }
     }

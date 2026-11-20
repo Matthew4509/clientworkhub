@@ -38,8 +38,18 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $new     = (string) ($_POST['password'] ?? '');
     $again   = (string) ($_POST['password2'] ?? '');
 
-    if (!cm_password_verify_account($user, $current)) {
+
+
+
+    $pwBucket = 'tfa_manage';
+    $pwKey    = 'account:' . (int) $user['id'];
+    if (cm_rate_exceeded($pwBucket, $pwKey, 10, 15)) {
+        $errors['current'] = 'Too many wrong passwords. Wait fifteen minutes, then try again.';
+    } elseif (!cm_password_verify_account($user, $current)) {
+        cm_rate_record($pwBucket, $pwKey);
         $errors['current'] = 'That is not the current password.';
+    } else {
+        cm_rate_clear($pwBucket, $pwKey);
     }
     $problem = cm_password_problem($new, (string) $user['email']);
     if ($problem !== '') {

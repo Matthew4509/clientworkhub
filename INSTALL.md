@@ -44,7 +44,10 @@ for it. Admin → Update shows it again after installing.
    Note all three names — cPanel puts your account name in front of them
    (like `myaccount_clients`).
 
-3. **Upload the files.** cPanel → *File Manager*. Upload the release zip
+3. **Upload the files.** Download `clientworkhub-x.y.z.zip` from the
+   Releases page, under *Assets* (not the green Code button and not the
+   *Source code* zips: those are wrapped in an extra folder and are not the
+   signed package). cPanel → *File Manager*. Upload the release zip
    and Extract it where you want the application to live:
    - the whole site: `public_html/`
    - a folder: `public_html/manager/` → yoursite.com/manager

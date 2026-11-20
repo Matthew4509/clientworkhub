@@ -76,6 +76,25 @@ $withPasswords = !empty($_POST['passwords']);
 
 
 
+if ($sealed) {
+    $withPasswords = !empty($held['passwords']);
+} elseif ($withPasswords) {
+    $vaultProblem = cm_backup_vault_problem($admin, (string) ($_POST['vault_pw'] ?? ''));
+    if ($vaultProblem !== '') {
+        cm_flash($vaultProblem, 'error');
+        cm_redirect_recovery('admin/update.php#backup');
+    }
+}
+
+
+if ($withPasswords) {
+    cm_audit('db.backup.vault_started', '', null,
+             'backup with client passwords started by ' . (string) $admin['email']);
+}
+
+
+
+
 
 
 $gzip = cm_backup_can_gzip() && empty($_POST['plain']);
