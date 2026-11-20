@@ -1,28 +1,59 @@
 # Client Work Hub
 
-**https://github.com/Matthew4509/clientworkhub** — releases are published
-on its Releases page, and the repository there has an illustrated tour
-(`readme.html`, and the same tour as `Client-Work-Hub.pdf`).
+**Run the work for all your clients from one place — and send each of them a
+clear report of what you did at the end of the month.**
 
-This is self-hosted software: it runs on the operator's own server, under
-their own domain, and names no other website anywhere a client can see. The
-footer of a running install belongs to the person running it.
+Client Work Hub is free software for freelancers and small client-service
+businesses: anyone doing the work *after* the sale, for more than one client.
+Websites, social media, maintenance, content, or work that takes you to the
+client's door.
 
-Client operations software for an agency of one (built to grow): clients,
-their websites and social accounts, securely stored credentials, jobs with
-daily/weekly/monthly actions, a work queue, time tracking, billing value and
-profitability — behind a hardened single-admin sign-in with two-step
-authentication.
+![The dashboard: today's work across every client](docs/images/dashboard.jpg)
 
-Plain PHP + MySQL/MariaDB, no framework, no composer — built to run on
-ordinary cPanel hosting and to be operated entirely from a browser: one-click
-install (`install.php`), one-click database updates (Admin → Settings →
-Update), streamed database backups, and a health screen that answers every
-question a person with a shell would ask.
+## What it is for
 
-**Current version: 0.3.24.** `FEATURES.md` is what it does, `SECURITY.md` is
-how it is defended and what is deliberately left open, `INSTALL.md` and
-`SETUP.md` are how to put it on a server and switch it on.
+**Many clients, one list.** Every client has one page: their brief, their
+websites and accounts, their jobs and their whole history. The dashboard shows
+what is due today across all of them, what is late, and how much of the day is
+already spoken for.
+
+**Repeat work without the admin.** Set a job up once — how long it takes and
+how often, daily, weekly or monthly — and it writes the days itself. Save the
+work you sell as a service and start the next one in a click. Every summary
+you send carries a link to the client's own page, where they can tell you how
+it went and book the same thing again, with no account and no password. A
+returning client shows up as a returning client.
+
+**Notes that stay where the work is.** Paste the client's brief onto the job
+and it shows on every task. Each task has two notes: one the client sees, one
+they never do. Snippets keep the sentences you write every day one click away,
+and standing instructions ("never post before 9am") follow the client
+everywhere.
+
+**End-of-month reports, done for you.** When a job finishes — for monthly work,
+at the end of the month — Client Work Hub puts together a summary of the work,
+day by day, from the notes you wrote for the client. Send it as a PDF or a
+private link; the client can sign it off or reply on the page, and you see the
+answer on their record.
+
+**And the rest, when you want it:** time tracking, profitability per client,
+invoices with Stripe or PayPal, reminders and follow-ups, onboarding forms
+that collect what you need before you start, and a booking page.
+
+## Your server, your clients' data
+
+There is no account to sign up for and no company in the middle. You put it
+on your own hosting — ordinary cPanel is enough — and it stays there. It names
+no other website anywhere a client can see.
+
+- Your clients' passwords are encrypted, with the key kept on your server and
+  never in the database.
+- Every time a password is shown, it is written to a log first.
+- Two-step sign-in, signed updates, and encrypted backups.
+
+**Current version: 0.3.25.** Free to use for your own business, with no
+client limit. [How to install it](INSTALL.md) · [Everything it does](FEATURES.md)
+· [How it is protected](SECURITY.md) · [The illustrated tour (PDF)](Client-Work-Hub.pdf)
 
 ## Two editions, one release
 

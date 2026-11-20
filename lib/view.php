@@ -292,15 +292,16 @@ function cm_foot(): void
       </div>
       <button class="modal-x" type="button" data-modal-close aria-label="Close">&times;</button>
     </div>
-    <p class="modal-sub">Security fixes from a second review before a stable release. Nothing you use moves.</p>
+    <p class="modal-sub">A clearer description of what Client Work Hub is for. Nothing you use moves.</p>
     <ul class="release-list">
+      <li><b>The read-me.</b> It now opens with who Client Work Hub is for and what it does: many clients in one list, repeat work, notes on every task, and a summary of the month&rsquo;s work for each client.</li>
+      <li class="muted"><b>Earlier releases:</b></li>
       <li><b>Backups with your clients&rsquo; passwords.</b> Ticking &ldquo;Include my clients&rsquo; stored passwords&rdquo; now asks for your own password, and the download is recorded before it starts.</li>
       <li><b>Uploaded backups.</b> A backup uploaded to be restored is kept under a name nobody can guess.</li>
-      <li><b>Passwords.</b> A new password can be up to 72 letters; longer ones were only partly used. Changing your password allows ten wrong tries in fifteen minutes.</li>
+      <li><b>Passwords.</b> A new password can be up to 72 letters (fewer with accents or emoji); longer ones were only partly used. Changing your password allows ten wrong tries in fifteen minutes.</li>
       <?php if (!cm_home()): ?>
-      <li><b>The booking form.</b> What a visitor types can no longer pass for lines of the email you are sent about a booking, and the form takes at most sixty bookings an hour across the whole site.</li>
+      <li><b>The booking form.</b> What a visitor types can no longer pass for lines of the email you are sent about a booking, and each booking form takes at most sixty bookings an hour.</li>
       <?php endif; ?>
-      <li class="muted"><b>Earlier releases:</b></li>
       <li><b>Printed invoices.</b> The bank transfer details and the DRAFT and VOID marks print again. They had gone missing from paper and from a PDF made by printing.</li>
       <li><b>Invoices and payments.</b> A line cannot be added to an invoice once it is issued. A date that does not exist, such as 31 February, is refused with a message wherever a date is typed. Very large amounts are refused instead of failing.</li>
       <?php if (!cm_home()): ?>
