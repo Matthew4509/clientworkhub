@@ -15,6 +15,14 @@ a particular host, path, or a competent server administrator.
 change can check itself against this list. A claim without a file name is
 not a claim.
 
+## The three security rules that must never be broken
+
+1. **Admin passwords are hashed** (`password_hash`), never encrypted.
+2. **Stored client credentials are encrypted** (AES-256-GCM) with a key that
+   lives in `config.php` / `storage/appkey.php` — **never in the database**.
+   A stolen database dump must decrypt to nothing.
+3. **The audit log is append-only.** No screen edits or deletes it, ever.
+
 ## Authentication
 
 - **Admin passwords are HASHED** — `password_hash()`/`password_verify()`

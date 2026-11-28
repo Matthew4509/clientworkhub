@@ -156,6 +156,10 @@ on Windows, MAMP on Mac.
 A local install is private to your machine. If the computer is shared,
 treat it like hosting: real database password, two-step sign-in on.
 
+PHP's own server (`php -S localhost:8080`) also runs it, but it does not read
+`.htaccess`, so `storage/`, `lib/` and the spooled email are readable over
+HTTP while it runs. Use it on your own machine only, never on a network.
+
 ## If your host runs nginx, not Apache
 
 **Skip this on cPanel** — cPanel is Apache or LiteSpeed, and both read the

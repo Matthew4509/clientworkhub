@@ -52,6 +52,24 @@ function cm_workday_weekdays(): array
 
 function cm_workday_schedules(): array
 {
+
+
+
+
+    if (isset($GLOBALS['cm_workday_cache']) && is_array($GLOBALS['cm_workday_cache'])) {
+        return $GLOBALS['cm_workday_cache'];
+    }
+    return $GLOBALS['cm_workday_cache'] = cm_workday_schedules_read();
+}
+
+
+function cm_workday_forget(): void
+{
+    unset($GLOBALS['cm_workday_cache']);
+}
+
+function cm_workday_schedules_read(): array
+{
     try {
         $rows = cm_all('SELECT * FROM workday ORDER BY sort, id');
     } catch (Throwable $ex) {
@@ -128,6 +146,7 @@ function cm_workday_seed_from_settings(): bool
              VALUES (?, ?, ?, ?, ?, ?)',
             [$id, 'Break', $bs . ':00', $be . ':00', 1, 10]);
     }
+    cm_workday_forget();
     return true;
 }
 
@@ -219,6 +238,7 @@ function cm_workday_save(int $id, array $in): string
         cm_q('UPDATE workday SET label = ?, weekdays = ?, starts = ?, ends = ?, updated_at = ?
                WHERE id = ?',
              [$label, $csv, $start . ':00', $end . ':00', cm_now(), $id]);
+        cm_workday_forget();
         return '';
     }
     $sort = (int) cm_val('SELECT COALESCE(MAX(sort), 0) + 10 FROM workday');
@@ -226,6 +246,7 @@ function cm_workday_save(int $id, array $in): string
                VALUES (?, ?, ?, ?, ?, ?, ?)',
               [$label !== '' ? $label : 'Working day', $csv, $start . ':00', $end . ':00',
                $sort, cm_now(), cm_now()]);
+    cm_workday_forget();
     return '';
 }
 
@@ -249,17 +270,20 @@ function cm_workday_break_add(int $workdayId, array $in): string
                $start . ':00', $end . ':00', !empty($in['flexible']) ? 1 : 0,
                (int) cm_val('SELECT COALESCE(MAX(sort), 0) + 10 FROM workday_break WHERE workday_id = ?',
                             [$workdayId])]);
+    cm_workday_forget();
     return '';
 }
 
 function cm_workday_remove(int $id): void
 {
     cm_q('DELETE FROM workday WHERE id = ?', [$id]);
+    cm_workday_forget();
 }
 
 function cm_workday_break_remove(int $id): void
 {
     cm_q('DELETE FROM workday_break WHERE id = ?', [$id]);
+    cm_workday_forget();
 }
 
 

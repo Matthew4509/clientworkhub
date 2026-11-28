@@ -292,10 +292,12 @@ function cm_foot(): void
       </div>
       <button class="modal-x" type="button" data-modal-close aria-label="Close">&times;</button>
     </div>
-    <p class="modal-sub">A clearer description of what Client Work Hub is for. Nothing you use moves.</p>
+    <p class="modal-sub">A faster dashboard and a new read-me. Nothing you use moves.</p>
     <ul class="release-list">
-      <li><b>The read-me.</b> It now opens with who Client Work Hub is for and what it does: many clients in one list, repeat work, notes on every task, and a summary of the month&rsquo;s work for each client.</li>
+      <li><b>A faster dashboard.</b> With many active jobs the dashboard could take so long that it showed an error page. Your working hours are now read once per page instead of once for every day checked.</li>
+      <li><b>The read-me.</b> It now says which edition to pick, the web edition or the Windows home edition, and shows every main screen in a picture.</li>
       <li class="muted"><b>Earlier releases:</b></li>
+      <li><b>The read-me.</b> It now opens with who Client Work Hub is for and what it does: many clients in one list, repeat work, notes on every task, and a summary of the month&rsquo;s work for each client.</li>
       <li><b>Backups with your clients&rsquo; passwords.</b> Ticking &ldquo;Include my clients&rsquo; stored passwords&rdquo; now asks for your own password, and the download is recorded before it starts.</li>
       <li><b>Uploaded backups.</b> A backup uploaded to be restored is kept under a name nobody can guess.</li>
       <li><b>Passwords.</b> A new password can be up to 72 letters (fewer with accents or emoji); longer ones were only partly used. Changing your password allows ten wrong tries in fifteen minutes.</li>

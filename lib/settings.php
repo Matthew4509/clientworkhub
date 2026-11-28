@@ -1035,6 +1035,8 @@ function cm_setting_clear(string $key): void
 function cm_settings_forget(): void
 {
     unset($GLOBALS['CM_SETTINGS_CACHE']);
+
+    unset($GLOBALS['cm_workday_cache']);
 }
 
 
